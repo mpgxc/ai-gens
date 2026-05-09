@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitFlow Simplificado - BuniFlow — Diagramas de Fluxo</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    .container { max-width: 1300px; margin: 0 auto; }
+
+    .header { margin-bottom: 2.5rem; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #fb7185;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .rules-bar {
+      margin-top: 1.25rem;
+      margin-left: 1.75rem;
+      padding: 0.875rem 1rem;
+      background: rgba(251, 113, 133, 0.08);
+      border: 1px solid rgba(251, 113, 133, 0.3);
+      border-radius: 0.5rem;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .rules-bar strong { color: #fb7185; font-weight: 600; }
+
+    .diagram-section { margin-bottom: 3rem; }
+
+    .diagram-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .diagram-title .idx {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .diagram-title h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .diagram-desc {
+      color: #94a3b8;
+      font-size: 0.8125rem;
+      margin-left: 2.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .sub-title {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+      margin-left: 2.5rem;
+    }
+
+    .sub-idx {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .sub-title h3 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .sub-desc {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      margin-left: 4.1rem;
+      margin-bottom: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .sub-desc code { font-size: 0.7rem; }
+
+    /* ── Blocos de comandos git ── */
+    .cmd-block {
+      margin-top: 1.25rem;
+      border: 1px solid #1e293b;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .cmd-title {
+      padding: 0.625rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      border-bottom: 1px solid #1e293b;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cmd-title .cmd-prompt { color: #34d399; }
+
+    .cmd-body {
+      padding: 1rem 1.25rem;
+      background: rgba(2, 6, 23, 0.7);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .cmd-group-label {
+      color: #475569;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.625rem;
+    }
+
+    .cmd-line {
+      margin-bottom: 0.625rem;
+    }
+
+    .cmd-comment {
+      display: block;
+      color: #475569;
+      font-size: 0.7rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .cmd-code {
+      display: block;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+      padding: 4px 10px;
+      color: #e2e8f0;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 3px;
+    }
+
+    /* ── Bloco de anti-padrões ── */
+    .no-do-block {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: rgba(251, 113, 133, 0.06);
+      border: 1px solid rgba(251, 113, 133, 0.25);
+      border-radius: 0.75rem;
+    }
+
+    .no-do-title {
+      color: #fb7185;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      margin-bottom: 0.875rem;
+    }
+
+    .no-do-item {
+      margin-bottom: 0.875rem;
+      padding-bottom: 0.875rem;
+      border-bottom: 1px solid rgba(251, 113, 133, 0.1);
+    }
+
+    .no-do-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+    .no-do-header {
+      color: #fca5a5;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .no-do-desc {
+      color: #94a3b8;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .no-do-desc code {
+      background: rgba(251,113,133,.1);
+      border: 1px solid rgba(251,113,133,.25);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #fca5a5;
+      font-size: 0.7rem;
+    }
+
+    /* ── PR via Bitbucket ── */
+    .pr-action {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      margin-top: 0.5rem;
+      padding: 0.625rem 0.875rem;
+      background: rgba(34, 211, 238, 0.06);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-left: 3px solid #22d3ee;
+      border-radius: 5px;
+    }
+
+    .pr-badge {
+      flex-shrink: 0;
+      background: rgba(34, 211, 238, 0.15);
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      color: #22d3ee;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      margin-top: 1px;
+    }
+
+    .pr-text {
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .pr-text strong { color: #e2e8f0; }
+    .pr-text code {
+      background: rgba(34,211,238,.1);
+      border: 1px solid rgba(34,211,238,.2);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #67e8f9;
+      font-size: 0.7rem;
+    }
+
+    .cmd-divider {
+      margin: 0.875rem 0 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #334155;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .cmd-divider::before, .cmd-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #1e293b;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg { width: 100%; min-width: 900px; display: block; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.875rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan    { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet  { background: #a78bfa; }
+    .card-dot.amber   { background: #fbbf24; }
+    .card-dot.rose    { background: #fb7185; }
+
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+
+    .card ul {
+      list-style: none;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      line-height: 1.7;
+    }
+
+    .card li { margin-bottom: 0.375rem; }
+
+    .card code {
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid #1e293b;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      color: #e2e8f0;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>GitFlow Simplificado - BuniFlow</h1>
+      </div>
+      <p class="subtitle">Fluxo de branches para desenvolvimento, release e hotfix</p>
+
+      <div class="rules-bar">
+        <div style="color:#fb7185; font-weight:700; font-size:0.8rem; margin-bottom:0.75rem;">⚑ Regras de ouro</div>
+        <ol style="list-style:none; display:flex; flex-direction:column; gap:0.5rem;">
+          <li style="display:flex; gap:0.75rem; align-items:baseline;">
+            <span style="color:#fb7185; font-weight:700; min-width:1.2rem;">1)</span>
+            <span><code style="background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);padding:1px 5px;border-radius:3px;color:#fb7185;">master</code> é a fonte da verdade — toda <code style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);padding:1px 5px;border-radius:3px;color:#34d399;">feature/*</code>, <code style="background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);padding:1px 5px;border-radius:3px;color:#a78bfa;">hotfix/*</code> e <code style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);padding:1px 5px;border-radius:3px;color:#fbbf24;">release/*</code> nasce dela.</span>
+          </li>
+          <li style="display:flex; gap:0.75rem; align-items:baseline;">
+            <span style="color:#fb7185; font-weight:700; min-width:1.2rem;">2)</span>
+            <span><code style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);padding:1px 5px;border-radius:3px;color:#22d3ee;">develop</code> serve apenas para validar em ambiente de testes (QA).</span>
+          </li>
+          <li style="display:flex; gap:0.75rem; align-items:baseline;">
+            <span style="color:#fb7185; font-weight:700; min-width:1.2rem;">3)</span>
+            <span>Deploys saem de <code style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);padding:1px 5px;border-radius:3px;color:#fbbf24;">release/vX.X.X</code>.</span>
+          </li>
+          <li style="display:flex; gap:0.75rem; align-items:baseline;">
+            <span style="color:#fb7185; font-weight:700; min-width:1.2rem;">4)</span>
+            <span>Após cada deploy: merge-back em <code style="background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);padding:1px 5px;border-radius:3px;color:#fb7185;">master</code> (com tag) e sync <code style="background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);padding:1px 5px;border-radius:3px;color:#fb7185;">master</code> → <code style="background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.3);padding:1px 5px;border-radius:3px;color:#22d3ee;">develop</code>.</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         SVG DEFS COMPARTILHADAS (dentro de cada SVG por padrão,
+         mas vamos repetir nos próximos para ficar self-contained)
+         ============================================================ -->
+
+    <!-- ============================================================
+         DIAGRAMA 1 — CRIAR FEATURE
+         ============================================================ -->
+    <section class="diagram-section">
+      <div class="diagram-title">
+        <span class="idx">01</span>
+        <h2>Criar uma feature</h2>
+      </div>
+      <p class="diagram-desc">
+        A feature nasce de <code style="color:#fb7185">master</code>, evolui isolada, é mergeada em
+        <code style="color:#22d3ee">develop</code> apenas para validação em QA, e fica aguardando ser
+        incluída em uma release. <strong style="color:#f1f5f9">develop nunca vai para produção.</strong>
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 1100 400">
+          <defs>
+            <marker id="arrow-slate-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+            </marker>
+            <marker id="arrow-emerald-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+            </marker>
+            <marker id="arrow-cyan-1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+            </marker>
+            <pattern id="grid-1" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid-1)"/>
+
+          <!-- Branch labels (à esquerda) -->
+          <rect x="20" y="82" width="110" height="40" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="75" y="100" fill="white" font-size="11" font-weight="600" text-anchor="middle">master</text>
+          <text x="75" y="114" fill="#fb7185" font-size="8" text-anchor="middle">fonte da verdade</text>
+
+          <rect x="20" y="212" width="110" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="75" y="230" fill="white" font-size="11" font-weight="600" text-anchor="middle">feature/xyz</text>
+          <text x="75" y="244" fill="#34d399" font-size="8" text-anchor="middle">dev local</text>
+
+          <rect x="20" y="322" width="110" height="40" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="75" y="340" fill="white" font-size="11" font-weight="600" text-anchor="middle">develop</text>
+          <text x="75" y="354" fill="#22d3ee" font-size="8" text-anchor="middle">ambiente QA</text>
+
+          <!-- Timelines -->
+          <line x1="140" y1="102" x2="1060" y2="102" stroke="#fb7185" stroke-width="2" opacity="0.4"/>
+          <line x1="300" y1="232" x2="1060" y2="232" stroke="#34d399" stroke-width="2" opacity="0.4"/>
+          <line x1="140" y1="342" x2="1060" y2="342" stroke="#22d3ee" stroke-width="2" opacity="0.4"/>
+
+          <!-- Commits master (só alguns pra dar contexto) -->
+          <circle cx="180" cy="102" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <circle cx="280" cy="102" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <circle cx="600" cy="102" r="6" fill="#fb7185" stroke="#020617" stroke-width="2" opacity="0.5"/>
+          <text x="600" y="88" fill="#94a3b8" font-size="8" text-anchor="middle" opacity="0.7">(outro time)</text>
+
+          <!-- Branch-off: master → feature -->
+          <path d="M 300 108 Q 300 170 300 226" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald-1)"/>
+          <text x="312" y="170" fill="#34d399" font-size="9">git checkout -b feature/xyz master</text>
+
+          <!-- Commits feature -->
+          <circle cx="300" cy="232" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="400" cy="232" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="500" cy="232" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <text x="400" y="218" fill="#94a3b8" font-size="8" text-anchor="middle">commits locais</text>
+
+          <!-- Merge feature → develop (1ª rodada QA) -->
+          <path d="M 500 238 Q 500 290 500 336" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan-1)"/>
+          <text x="512" y="290" fill="#22d3ee" font-size="9">merge p/ QA</text>
+          <circle cx="500" cy="342" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <!-- Ajuste pós-QA na feature -->
+          <circle cx="640" cy="232" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <text x="640" y="218" fill="#94a3b8" font-size="8" text-anchor="middle">fix pós-QA</text>
+
+          <!-- Re-merge em develop -->
+          <path d="M 640 238 Q 640 290 640 336" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan-1)"/>
+          <circle cx="640" cy="342" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <!-- Feature pronta -->
+          <circle cx="780" cy="232" r="8" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <text x="780" y="208" fill="#fbbf24" font-size="10" font-weight="600" text-anchor="middle">✓ aprovada</text>
+          <text x="780" y="220" fill="#94a3b8" font-size="8" text-anchor="middle">aguardando release</text>
+
+          <!-- Callout à direita -->
+          <rect x="850" y="180" width="210" height="160" rx="8" fill="rgba(15, 23, 42, 0.8)" stroke="#334155" stroke-width="1"/>
+          <text x="865" y="200" fill="#e2e8f0" font-size="10" font-weight="600">Passos</text>
+          <line x1="865" y1="206" x2="1045" y2="206" stroke="#334155" stroke-width="1"/>
+          <text x="865" y="222" fill="#fb7185" font-size="9" font-weight="600">1.</text>
+          <text x="882" y="222" fill="#cbd5e1" font-size="9">branch from master</text>
+          <text x="865" y="240" fill="#34d399" font-size="9" font-weight="600">2.</text>
+          <text x="882" y="240" fill="#cbd5e1" font-size="9">commits + PR</text>
+          <text x="865" y="258" fill="#22d3ee" font-size="9" font-weight="600">3.</text>
+          <text x="882" y="258" fill="#cbd5e1" font-size="9">merge em develop</text>
+          <text x="882" y="270" fill="#94a3b8" font-size="8">→ deploy QA automático</text>
+          <text x="865" y="288" fill="#22d3ee" font-size="9" font-weight="600">4.</text>
+          <text x="882" y="288" fill="#cbd5e1" font-size="9">QA valida</text>
+          <text x="865" y="306" fill="#fbbf24" font-size="9" font-weight="600">5.</text>
+          <text x="882" y="306" fill="#cbd5e1" font-size="9">aguarda release</text>
+          <text x="882" y="318" fill="#94a3b8" font-size="8" font-style="italic">NÃO mergear em master ainda</text>
+
+          <!-- Timeline label -->
+          <text x="1060" y="385" fill="#475569" font-size="8" text-anchor="end">tempo →</text>
+        </svg>
+      </div>
+
+      <!-- COMANDOS GIT — seção 1 -->
+      <div class="cmd-block">
+        <div class="cmd-title"><span class="cmd-prompt">$</span> Comandos git — Criar feature</div>
+        <div class="cmd-body">
+          <div>
+            <div class="cmd-group-label">1. Criar a branch</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># partir sempre do master atualizado</span>
+              <span class="cmd-code">git checkout master && git pull</span>
+              <span class="cmd-code">git checkout -b feature/minha-feature</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">2. Trabalhar e commitar</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># commite atômico com mensagem descritiva</span>
+              <span class="cmd-code">git add .</span>
+              <span class="cmd-code">git commit -m "feat: descrição do que foi feito"</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">3. Publicar a branch</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git push -u origin feature/minha-feature</span>
+            </div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra um Pull Request: <code>feature/minha-feature</code> → <code>develop</code><br>
+              Aguarde code review e aprovação antes do merge.</span>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-label">4. Manter branch atualizada com master</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># se master evoluiu enquanto você trabalhava</span>
+              <span class="cmd-code">git fetch origin</span>
+              <span class="cmd-code">git rebase origin/master</span>
+              <span class="cmd-code">git push --force-with-lease</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">5. Após QA aprovado — aguardar release</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># feature fica viva, será incluída em uma release/vX.X.X</span>
+              <span class="cmd-comment"># NÃO mergear diretamente em master</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DIAGRAMA 2 — CRIAR RELEASE & DEPLOY
+         ============================================================ -->
+    <section class="diagram-section">
+      <div class="diagram-title">
+        <span class="idx">02</span>
+        <h2>Criar release &amp; fazer deploy</h2>
+      </div>
+      <p class="diagram-desc">
+        Quando há N features aprovadas em QA, cria-se uma <code style="color:#fbbf24">release/vX.X.X</code>
+        a partir de <code style="color:#fb7185">master</code>, agregam-se as features, faz-se o deploy e
+        depois <strong style="color:#f1f5f9">sempre</strong> merge-back em master (com tag) + sync em develop.
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 1200 680">
+          <defs>
+            <marker id="arrow-slate-2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+            </marker>
+            <marker id="arrow-amber-2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+            </marker>
+            <marker id="arrow-rose-2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+            </marker>
+            <marker id="arrow-cyan-2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+            </marker>
+            <pattern id="grid-2" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid-2)"/>
+
+          <!-- Branch labels -->
+          <rect x="20" y="60" width="130" height="40" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="85" y="78" fill="white" font-size="11" font-weight="600" text-anchor="middle">master</text>
+          <text x="85" y="92" fill="#fb7185" font-size="8" text-anchor="middle">produção</text>
+
+          <rect x="20" y="180" width="130" height="40" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="85" y="198" fill="white" font-size="11" font-weight="600" text-anchor="middle">release/v1.2.0</text>
+          <text x="85" y="212" fill="#fbbf24" font-size="8" text-anchor="middle">deploy</text>
+
+          <rect x="20" y="300" width="130" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="85" y="318" fill="white" font-size="11" font-weight="600" text-anchor="middle">feature/A</text>
+          <text x="85" y="332" fill="#34d399" font-size="8" text-anchor="middle">aprovada</text>
+
+          <rect x="20" y="420" width="130" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="85" y="438" fill="white" font-size="11" font-weight="600" text-anchor="middle">feature/B</text>
+          <text x="85" y="452" fill="#34d399" font-size="8" text-anchor="middle">aprovada</text>
+
+          <rect x="20" y="540" width="130" height="40" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="85" y="558" fill="white" font-size="11" font-weight="600" text-anchor="middle">develop</text>
+          <text x="85" y="572" fill="#22d3ee" font-size="8" text-anchor="middle">QA</text>
+
+          <!-- Timelines -->
+          <line x1="160" y1="80"  x2="1160" y2="80"  stroke="#fb7185" stroke-width="2" opacity="0.4"/>
+          <line x1="420" y1="200" x2="1000" y2="200" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+          <line x1="160" y1="320" x2="520"  y2="320" stroke="#34d399" stroke-width="2" opacity="0.4"/>
+          <line x1="160" y1="440" x2="600"  y2="440" stroke="#34d399" stroke-width="2" opacity="0.4"/>
+          <line x1="160" y1="560" x2="1160" y2="560" stroke="#22d3ee" stroke-width="2" opacity="0.4"/>
+
+          <!-- ============ FASE 1: preparação (até x=400) ============ -->
+          <text x="280" y="38" fill="#94a3b8" font-size="10" font-weight="600">FASE 1 — Preparação</text>
+          <line x1="160" y1="44" x2="400" y2="44" stroke="#475569" stroke-width="1" stroke-dasharray="3,3"/>
+
+          <!-- master commits iniciais -->
+          <circle cx="200" cy="80" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <text x="200" y="68" fill="#94a3b8" font-size="8" text-anchor="middle">v1.1.0</text>
+
+          <!-- feature/A e feature/B já existem e tiveram commits -->
+          <circle cx="220" cy="320" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="300" cy="320" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="380" cy="320" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+
+          <circle cx="220" cy="440" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="320" cy="440" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+
+          <!-- features mergearam em develop antes (QA) -->
+          <circle cx="380" cy="560" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+          <text x="380" y="588" fill="#94a3b8" font-size="8" text-anchor="middle">QA feat A+B</text>
+
+          <!-- ============ FASE 2: release (x=420 a 900) ============ -->
+          <text x="600" y="38" fill="#94a3b8" font-size="10" font-weight="600">FASE 2 — Release &amp; Deploy</text>
+          <line x1="420" y1="44" x2="900" y2="44" stroke="#475569" stroke-width="1" stroke-dasharray="3,3"/>
+
+          <!-- Release nasce de master -->
+          <path d="M 420 86 L 420 194" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber-2)"/>
+          <text x="432" y="140" fill="#fbbf24" font-size="9">git checkout -b</text>
+          <text x="432" y="152" fill="#fbbf24" font-size="9">release/v1.2.0 master</text>
+
+          <circle cx="420" cy="200" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+
+          <!-- HEAD das features no momento do merge -->
+          <circle cx="500" cy="320" r="6" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <circle cx="580" cy="440" r="6" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+
+          <!-- Merge feature/A → release -->
+          <path d="M 500 314 L 500 206" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber-2)"/>
+          <text x="512" y="262" fill="#fbbf24" font-size="9">merge feat/A</text>
+          <circle cx="500" cy="200" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+
+          <!-- Merge feature/B → release -->
+          <path d="M 580 434 Q 580 380 580 320 L 580 206" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber-2)"/>
+          <text x="592" y="380" fill="#fbbf24" font-size="9">merge feat/B</text>
+          <circle cx="580" cy="200" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+
+          <!-- Features encerram -->
+          <text x="528" y="324" fill="#475569" font-size="8">— fim</text>
+          <text x="608" y="444" fill="#475569" font-size="8">— fim</text>
+
+          <!-- Testes de release -->
+          <circle cx="680" cy="200" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+          <text x="680" y="186" fill="#94a3b8" font-size="8" text-anchor="middle">smoke tests</text>
+
+          <!-- DEPLOY badge -->
+          <rect x="740" y="180" width="120" height="40" rx="6" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="2"/>
+          <text x="800" y="198" fill="#fbbf24" font-size="11" font-weight="700" text-anchor="middle">🚀 DEPLOY</text>
+          <text x="800" y="212" fill="#fbbf24" font-size="8" text-anchor="middle">produção</text>
+
+          <!-- ============ FASE 3: merge-back + sync (x=920+) ============ -->
+          <text x="1030" y="38" fill="#94a3b8" font-size="10" font-weight="600">FASE 3 — Finalização</text>
+          <line x1="920" y1="44" x2="1160" y2="44" stroke="#475569" stroke-width="1" stroke-dasharray="3,3"/>
+
+          <!-- Merge back release → master (com tag) -->
+          <path d="M 940 194 L 940 86" fill="none" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrow-rose-2)"/>
+          <text x="952" y="150" fill="#fb7185" font-size="9">merge --no-ff</text>
+          <text x="952" y="162" fill="#fb7185" font-size="9">+ tag v1.2.0</text>
+
+          <!-- Master commit com tag -->
+          <circle cx="940" cy="80" r="8" fill="#fb7185" stroke="#fbbf24" stroke-width="2"/>
+          <text x="940" y="60" fill="#fbbf24" font-size="10" font-weight="700" text-anchor="middle">🏷 v1.2.0</text>
+
+          <!-- Sync master → develop -->
+          <path d="M 1040 86 Q 1040 320 1040 554" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-cyan-2)"/>
+          <text x="1052" y="300" fill="#22d3ee" font-size="9">sync</text>
+          <text x="1052" y="312" fill="#22d3ee" font-size="9">master</text>
+          <text x="1052" y="324" fill="#22d3ee" font-size="9">→ develop</text>
+          <circle cx="1040" cy="560" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <circle cx="1040" cy="80" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+
+          <!-- Release branch fim -->
+          <text x="1000" y="204" fill="#475569" font-size="8">— fim</text>
+
+          <!-- Legenda de fases no rodapé -->
+          <text x="1160" y="665" fill="#475569" font-size="8" text-anchor="end">tempo →</text>
+        </svg>
+      </div>
+
+      <!-- COMANDOS GIT — seção 2 -->
+      <div class="cmd-block">
+        <div class="cmd-title"><span class="cmd-prompt">$</span> Comandos git — Criar release &amp; deploy</div>
+        <div class="cmd-body">
+          <div>
+            <div class="cmd-group-label">1. Criar a release a partir de master</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout master && git pull</span>
+              <span class="cmd-code">git checkout -b release/v1.2.0</span>
+              <span class="cmd-code">git push -u origin release/v1.2.0</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">2. Agregar features aprovadas via PR</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Para cada feature aprovada em QA, abra um Pull Request:<br>
+              <code>feature/A</code> → <code>release/v1.2.0</code> &nbsp;|&nbsp; <code>feature/B</code> → <code>release/v1.2.0</code><br>
+              Repita para cada feature que entrará nesta release.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">3. Deploy disparado pelo CI/CD</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># CI/CD detecta a branch release/* e deploya automaticamente</span>
+              <span class="cmd-comment"># ou dispare manualmente conforme pipeline do time</span>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-label">4. Após deploy OK — tag local e push</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># a tag marca o ponto exato que foi para produção</span>
+              <span class="cmd-code">git checkout release/v1.2.0 && git pull</span>
+              <span class="cmd-code">git tag -a v1.2.0 -m "Release 1.2.0"</span>
+              <span class="cmd-code">git push origin v1.2.0</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">5. Merge-back release → master via PR</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>release/v1.2.0</code> → <code>master</code><br>
+              Somente após aprovação o merge é executado.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">6. Sync master → develop via PR</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>master</code> → <code>develop</code><br>
+              Mantém o ambiente de QA atualizado com o que foi para produção.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">7. Limpar branches locais</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git branch -d release/v1.2.0 feature/A feature/B</span>
+              <span class="cmd-code">git push origin --delete release/v1.2.0 feature/A feature/B</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DIAGRAMA 3 — RESOLVER CONFLITOS
+         ============================================================ -->
+    <section class="diagram-section">
+      <div class="diagram-title">
+        <span class="idx">03</span>
+        <h2>Resolver conflitos</h2>
+      </div>
+      <p class="diagram-desc">
+        Há dois cenários comuns, cada um com sua estratégia. <strong style="color:#f1f5f9">Identifique primeiro de onde vem o conflito</strong>
+        — se de <code style="color:#fb7185">master</code> (feature ficou atrás) ou de <code style="color:#22d3ee">develop</code>
+        (outra feature em QA tocou o mesmo código).
+      </p>
+
+      <!-- Caixa de decisão A vs B -->
+      <div style="margin-left: 2.5rem; margin-bottom: 1.5rem; padding: 1rem 1.25rem; background: rgba(15,23,42,0.5); border: 1px solid #1e293b; border-radius: 0.75rem;">
+        <div style="color: #e2e8f0; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.75rem;">
+          ▸ git diff origin/master...feature/xyz vs. git diff origin/develop...feature/xyz → onde aparecem os conflitos?
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <div style="flex: 1 1 300px; padding: 0.75rem 1rem; background: rgba(251,113,133,0.08); border: 1px solid rgba(251,113,133,0.3); border-radius: 0.5rem;">
+            <div style="color: #fb7185; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">SE o conflito vem de master</div>
+            <div style="color: #cbd5e1; font-size: 0.75rem; line-height: 1.5;">→ outro dev mergeou algo antes de você<br>→ use <strong style="color:#f1f5f9">Cenário A (rebase)</strong></div>
+          </div>
+          <div style="flex: 1 1 300px; padding: 0.75rem 1rem; background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.3); border-radius: 0.5rem;">
+            <div style="color: #22d3ee; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem;">SE o conflito vem só de develop</div>
+            <div style="color: #cbd5e1; font-size: 0.75rem; line-height: 1.5;">→ outra feature em QA tocou o mesmo código<br>→ use <strong style="color:#f1f5f9">Cenário B (branch de resolução)</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANTI-PADRÕES — seção 3 -->
+      <div class="no-do-block">
+        <div class="no-do-title">❌ O que nunca fazer na resolução de conflitos</div>
+        <div class="no-do-item">
+          <div class="no-do-header">❌ Resolver conflitos pela interface web do Bitbucket (ou GitHub/GitLab)</div>
+          <div class="no-do-desc">A interface web cria merge commits automáticos sem mostrar o contexto completo do conflito. Você tende a aceitar versões incorretas sem perceber, o diff fica confuso, não há como testar o resultado antes de commitar, e o histórico fica poluído com resoluções incompletas. <strong style="color:#e2e8f0;">Sempre resolva localmente, teste, e só então suba.</strong></div>
+        </div>
+        <div class="no-do-item">
+          <div class="no-do-header">❌ Mergear <code>develop</code> dentro da sua <code>feature/*</code></div>
+          <div class="no-do-desc">Isso contamina a sua feature com código de <em>outras</em> features que ainda estão em QA — e que talvez não entrem na mesma release. Cria dependências invisíveis: sua feature passa a precisar de código que não veio de master. Quando a release for composta, haverá commits estranhos na sua branch. <strong style="color:#e2e8f0;">Use o Cenário A (rebase) ou o Cenário B (conflict branch), nunca <code>git merge develop</code> dentro de uma feature.</strong></div>
+        </div>
+        <div class="no-do-item">
+          <div class="no-do-header">❌ Usar <code>git push --force</code> (sem <code>--lease</code>)</div>
+          <div class="no-do-desc">O <code>--force</code> simples sobrescreve cegamente o remote, podendo destruir commits que outro dev pushnou enquanto você rebbaseava. O <code>--force-with-lease</code> verifica se o remote não avançou desde seu último fetch e aborta se avançou. <strong style="color:#e2e8f0;">Sempre use <code>--force-with-lease</code>. Nunca use <code>--force</code> em branches compartilhadas.</strong></div>
+        </div>
+        <div class="no-do-item">
+          <div class="no-do-header">❌ Fazer <code>git rebase</code> em branches compartilhadas (<code>develop</code>, <code>release/*</code>, <code>master</code>)</div>
+          <div class="no-do-desc">Rebase reescreve o histórico. Em branches que outras pessoas usam, isso cria estados divergentes impossíveis de reconciliar sem force-push destrutivo. <strong style="color:#e2e8f0;">Rebase é permitido somente em <code>feature/*</code> e <code>hotfix/*</code> que são suas.</strong></div>
+        </div>
+      </div>
+
+      <!-- ============= SUB-DIAGRAMA A: REBASE CONTRA MASTER ============= -->
+      <div class="sub-title">
+        <span class="sub-idx">A</span>
+        <h3>Conflito com master — feature desatualizada</h3>
+      </div>
+      <p class="sub-desc">
+        Outro time mergeou em <code style="color:#fb7185">master</code> enquanto você estava na feature.
+        Estratégia: <strong style="color:#f1f5f9">rebase da feature contra master</strong>,
+        resolver, <code>push --force-with-lease</code>. A feature continua sendo a branch de trabalho.
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 1200 500">
+          <defs>
+            <marker id="arrow-slate-3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+            </marker>
+            <marker id="arrow-rose-3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+            </marker>
+            <marker id="arrow-emerald-3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+            </marker>
+            <marker id="arrow-cyan-3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+            </marker>
+            <pattern id="grid-3" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid-3)"/>
+
+          <!-- Branch labels -->
+          <rect x="20" y="80" width="110" height="40" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="75" y="98" fill="white" font-size="11" font-weight="600" text-anchor="middle">master</text>
+          <text x="75" y="112" fill="#fb7185" font-size="8" text-anchor="middle">evoluiu sem você</text>
+
+          <rect x="20" y="210" width="110" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="75" y="228" fill="white" font-size="11" font-weight="600" text-anchor="middle">feature/xyz</text>
+          <text x="75" y="242" fill="#34d399" font-size="8" text-anchor="middle">sua branch</text>
+
+          <rect x="20" y="340" width="110" height="40" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="75" y="358" fill="white" font-size="11" font-weight="600" text-anchor="middle">develop</text>
+          <text x="75" y="372" fill="#22d3ee" font-size="8" text-anchor="middle">alvo do merge</text>
+
+          <!-- Timelines -->
+          <line x1="140" y1="100" x2="780" y2="100" stroke="#fb7185" stroke-width="2" opacity="0.4"/>
+          <line x1="140" y1="230" x2="780" y2="230" stroke="#34d399" stroke-width="2" opacity="0.4"/>
+          <line x1="140" y1="360" x2="780" y2="360" stroke="#22d3ee" stroke-width="2" opacity="0.4"/>
+
+          <!-- Master: commit inicial + commit de outro dev (divergência) -->
+          <circle cx="170" cy="100" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <text x="170" y="86" fill="#94a3b8" font-size="8" text-anchor="middle">base</text>
+
+          <circle cx="380" cy="100" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <text x="380" y="86" fill="#94a3b8" font-size="8" text-anchor="middle">outro time</text>
+          <text x="380" y="74" fill="#94a3b8" font-size="8" text-anchor="middle">mergeou antes</text>
+
+          <!-- Feature: nasce de master (base) -->
+          <path d="M 170 106 Q 170 160 170 224" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald-3)"/>
+
+          <circle cx="170" cy="230" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="260" cy="230" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="340" cy="230" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+
+          <!-- Tentativa de merge em develop: BOOM -->
+          <path d="M 340 236 Q 340 290 340 354" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+          <!-- Bomba/explosão de conflito -->
+          <g transform="translate(340, 300)">
+            <rect x="-50" y="-14" width="100" height="28" rx="4" fill="rgba(251, 113, 133, 0.25)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="0" y="4" fill="#fb7185" font-size="11" font-weight="700" text-anchor="middle">💥 CONFLITO</text>
+          </g>
+
+          <!-- Seta: abandone merge, volte p/ feature e rebase -->
+          <path d="M 395 300 Q 450 300 450 240 Q 450 230 460 230" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-slate-3)"/>
+          <text x="460" y="278" fill="#94a3b8" font-size="9">abortar, rebasear</text>
+
+          <!-- Rebase: puxar commits da master (380) para a feature -->
+          <path d="M 380 106 Q 440 140 440 200 Q 440 230 460 230" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-rose-3)"/>
+          <text x="460" y="160" fill="#fb7185" font-size="9">git rebase origin/master</text>
+          <text x="460" y="172" fill="#94a3b8" font-size="8">traz commits do outro dev</text>
+
+          <!-- Feature rebaseada: commits reaplicados após master HEAD -->
+          <circle cx="480" cy="230" r="6" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <circle cx="560" cy="230" r="6" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <circle cx="640" cy="230" r="6" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <text x="560" y="200" fill="#fbbf24" font-size="8" text-anchor="middle">✨ commits reaplicados</text>
+          <text x="560" y="212" fill="#94a3b8" font-size="8" text-anchor="middle">(após resolver arquivos)</text>
+
+          <!-- force-push nota -->
+          <text x="560" y="260" fill="#94a3b8" font-size="8" text-anchor="middle" font-style="italic">git push --force-with-lease</text>
+
+          <!-- Re-tentativa de merge em develop: OK -->
+          <path d="M 640 236 Q 640 290 640 354" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan-3)"/>
+          <text x="652" y="295" fill="#22d3ee" font-size="9">merge limpo ✓</text>
+          <circle cx="640" cy="360" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <!-- ============= CALLOUT: PASSO-A-PASSO ============= -->
+          <rect x="830" y="70" width="340" height="400" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="#334155" stroke-width="1"/>
+
+          <text x="850" y="95" fill="#e2e8f0" font-size="12" font-weight="600">Passo-a-passo para resolver</text>
+          <line x1="850" y1="104" x2="1150" y2="104" stroke="#334155" stroke-width="1"/>
+
+          <!-- Step 1 -->
+          <circle cx="862" cy="128" r="10" fill="rgba(251, 113, 133, 0.2)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="862" y="132" fill="#fb7185" font-size="10" font-weight="700" text-anchor="middle">1</text>
+          <text x="882" y="126" fill="#cbd5e1" font-size="10" font-weight="600">Atualize o master local</text>
+          <text x="882" y="140" fill="#64748b" font-size="9" font-family="JetBrains Mono">git fetch origin</text>
+
+          <!-- Step 2 -->
+          <circle cx="862" cy="170" r="10" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="862" y="174" fill="#34d399" font-size="10" font-weight="700" text-anchor="middle">2</text>
+          <text x="882" y="168" fill="#cbd5e1" font-size="10" font-weight="600">Vá para sua feature</text>
+          <text x="882" y="182" fill="#64748b" font-size="9" font-family="JetBrains Mono">git checkout feature/xyz</text>
+
+          <!-- Step 3 -->
+          <circle cx="862" cy="212" r="10" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="862" y="216" fill="#fbbf24" font-size="10" font-weight="700" text-anchor="middle">3</text>
+          <text x="882" y="210" fill="#cbd5e1" font-size="10" font-weight="600">Rebase contra master</text>
+          <text x="882" y="224" fill="#64748b" font-size="9" font-family="JetBrains Mono">git rebase origin/master</text>
+
+          <!-- Step 4 -->
+          <circle cx="862" cy="254" r="10" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="862" y="258" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">4</text>
+          <text x="882" y="252" fill="#cbd5e1" font-size="10" font-weight="600">Resolva nos arquivos</text>
+          <text x="882" y="266" fill="#64748b" font-size="9">edite → <tspan font-family="JetBrains Mono">git add .</tspan></text>
+
+          <!-- Step 5 -->
+          <circle cx="862" cy="296" r="10" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="862" y="300" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">5</text>
+          <text x="882" y="294" fill="#cbd5e1" font-size="10" font-weight="600">Continue o rebase</text>
+          <text x="882" y="308" fill="#64748b" font-size="9" font-family="JetBrains Mono">git rebase --continue</text>
+
+          <!-- Step 6 -->
+          <circle cx="862" cy="338" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="862" y="342" fill="#22d3ee" font-size="10" font-weight="700" text-anchor="middle">6</text>
+          <text x="882" y="336" fill="#cbd5e1" font-size="10" font-weight="600">Force-push seguro</text>
+          <text x="882" y="350" fill="#64748b" font-size="9" font-family="JetBrains Mono">git push --force-with-lease</text>
+
+          <!-- Step 7 -->
+          <circle cx="862" cy="380" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="862" y="384" fill="#22d3ee" font-size="10" font-weight="700" text-anchor="middle">7</text>
+          <text x="882" y="378" fill="#cbd5e1" font-size="10" font-weight="600">Re-abra o PR</text>
+          <text x="882" y="392" fill="#64748b" font-size="9">CI reexecuta, merge flui</text>
+
+          <!-- Aviso -->
+          <rect x="850" y="415" width="300" height="42" rx="6" fill="rgba(251, 146, 60, 0.1)" stroke="#fb923c" stroke-width="1"/>
+          <text x="862" y="431" fill="#fb923c" font-size="9" font-weight="600">⚠ atenção</text>
+          <text x="862" y="445" fill="#cbd5e1" font-size="8">nunca force-push em master/develop/release —</text>
+          <text x="862" y="455" fill="#cbd5e1" font-size="8">apenas em feature/* que é sua.</text>
+        </svg>
+      </div>
+
+      <!-- COMANDOS GIT — Cenário A -->
+      <div class="cmd-block">
+        <div class="cmd-title"><span class="cmd-prompt">$</span> Comandos git — Cenário A: rebase contra master</div>
+        <div class="cmd-body">
+          <div>
+            <div class="cmd-group-label">1. Atualizar referências remotas</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git fetch origin</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">2. Rebasear a feature no topo de master</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout feature/xyz</span>
+              <span class="cmd-code">git rebase origin/master</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">3. Se houver conflito durante o rebase</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># edite os arquivos conflitantes, depois:</span>
+              <span class="cmd-code">git add .</span>
+              <span class="cmd-code">git rebase --continue</span>
+              <span class="cmd-comment"># repita para cada commit conflitante</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">4. Abortar o rebase (se quiser recomeçar)</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git rebase --abort</span>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-label">5. Force-push seguro na feature</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># --force-with-lease aborta se alguém pushnou antes de você</span>
+              <span class="cmd-code">git push --force-with-lease origin feature/xyz</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">6. Re-abrir / atualizar PR → develop para QA</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">O PR existente de <code>feature/xyz</code> → <code>develop</code> já foi atualizado pelo force-push.<br>
+              Solicite novo review se necessário e aguarde aprovação para o merge.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============= SUB-DIAGRAMA B: BRANCH DE RESOLUÇÃO ============= -->
+      <div class="sub-title">
+        <span class="sub-idx">B</span>
+        <h3>Conflito com develop — outras features em QA tocaram o mesmo código</h3>
+      </div>
+      <p class="sub-desc">
+        O conflito <strong style="color:#f1f5f9">não vem de master</strong> (rebase não resolve) — vem de outra feature já em
+        <code style="color:#22d3ee">develop</code>. Estratégia: criar uma <code style="color:#fb923c">conflict/*</code> a partir
+        de <code style="color:#22d3ee">develop</code>, mergear a feature lá, resolver e abrir PR. A feature original
+        <strong style="color:#f1f5f9">fica intacta</strong> para entrar na release depois.
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 1200 520">
+          <defs>
+            <marker id="arrow-slate-3b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+            </marker>
+            <marker id="arrow-rose-3b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+            </marker>
+            <marker id="arrow-emerald-3b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+            </marker>
+            <marker id="arrow-orange-3b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c"/>
+            </marker>
+            <marker id="arrow-cyan-3b" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+            </marker>
+            <pattern id="grid-3b" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid-3b)"/>
+
+          <!-- Branch labels -->
+          <rect x="20" y="70" width="130" height="40" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="85" y="88" fill="white" font-size="11" font-weight="600" text-anchor="middle">master</text>
+          <text x="85" y="102" fill="#fb7185" font-size="8" text-anchor="middle">intocada</text>
+
+          <rect x="20" y="170" width="130" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="85" y="188" fill="white" font-size="11" font-weight="600" text-anchor="middle">feature/xyz</text>
+          <text x="85" y="202" fill="#34d399" font-size="8" text-anchor="middle">sua branch</text>
+
+          <rect x="20" y="280" width="130" height="40" rx="6" fill="rgba(251, 146, 60, 0.3)" stroke="#fb923c" stroke-width="2"/>
+          <text x="85" y="295" fill="white" font-size="10" font-weight="600" text-anchor="middle">conflict/feat-xyz</text>
+          <text x="85" y="307" fill="white" font-size="10" font-weight="600" text-anchor="middle">-to-develop</text>
+          <text x="85" y="318" fill="#fb923c" font-size="7" text-anchor="middle">temporária</text>
+
+          <rect x="20" y="390" width="130" height="40" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="85" y="408" fill="white" font-size="11" font-weight="600" text-anchor="middle">develop</text>
+          <text x="85" y="422" fill="#22d3ee" font-size="8" text-anchor="middle">alvo do merge</text>
+
+          <!-- Timelines -->
+          <line x1="160" y1="90"  x2="800" y2="90"  stroke="#fb7185" stroke-width="2" opacity="0.4"/>
+          <line x1="220" y1="190" x2="800" y2="190" stroke="#34d399" stroke-width="2" opacity="0.4"/>
+          <line x1="560" y1="300" x2="800" y2="300" stroke="#fb923c" stroke-width="2" opacity="0.5"/>
+          <line x1="160" y1="410" x2="800" y2="410" stroke="#22d3ee" stroke-width="2" opacity="0.4"/>
+
+          <!-- master base commit -->
+          <circle cx="200" cy="90" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <text x="200" y="76" fill="#94a3b8" font-size="8" text-anchor="middle">base</text>
+
+          <!-- branch-off master → feature -->
+          <path d="M 220 96 Q 220 140 220 184" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald-3b)"/>
+          <text x="232" y="142" fill="#34d399" font-size="8">checkout -b feature/xyz</text>
+
+          <!-- Feature commits -->
+          <circle cx="220" cy="190" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="300" cy="190" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="380" cy="190" r="6" fill="#34d399" stroke="#020617" stroke-width="2"/>
+          <circle cx="460" cy="190" r="7" fill="#34d399" stroke="#fbbf24" stroke-width="2"/>
+          <text x="460" y="174" fill="#fbbf24" font-size="8" text-anchor="middle">HEAD feature</text>
+
+          <!-- Develop: commits de outros PRs (que vão causar conflito) -->
+          <circle cx="200" cy="410" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+          <circle cx="290" cy="410" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+          <circle cx="380" cy="410" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+          <circle cx="460" cy="410" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+          <text x="335" y="434" fill="#94a3b8" font-size="8" text-anchor="middle">outras features mergeadas (alteraram o mesmo código)</text>
+
+          <!-- Tentativa de merge feature → develop: FALHA -->
+          <path d="M 466 196 Q 490 250 500 360" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+          <g transform="translate(510, 350)">
+            <rect x="-55" y="-14" width="110" height="28" rx="4" fill="rgba(251, 113, 133, 0.25)" stroke="#fb7185" stroke-width="1.5"/>
+            <text x="0" y="4" fill="#fb7185" font-size="10" font-weight="700" text-anchor="middle">💥 CONFLITO</text>
+          </g>
+          <text x="510" y="380" fill="#94a3b8" font-size="8" text-anchor="middle">merge direto falhou</text>
+
+          <!-- Passo 1: cria conflict branch a partir de develop -->
+          <path d="M 560 404 Q 560 355 560 314" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrow-orange-3b)"/>
+          <text x="412" y="348" fill="#fb923c" font-size="8">1. checkout -b</text>
+          <text x="412" y="360" fill="#fb923c" font-size="8">conflict/... (from develop)</text>
+
+          <!-- Commit inicial na conflict branch -->
+          <circle cx="560" cy="300" r="6" fill="#fb923c" stroke="#020617" stroke-width="2"/>
+
+          <!-- Passo 2: merge feature/xyz → conflict branch -->
+          <path d="M 460 196 Q 530 220 620 294" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrow-orange-3b)"/>
+          <text x="540" y="248" fill="#fb923c" font-size="8" font-weight="600">2. git merge feature/xyz</text>
+
+          <!-- Commit de merge (possivelmente com conflito a resolver) -->
+          <circle cx="620" cy="300" r="7" fill="#fb923c" stroke="#020617" stroke-width="2"/>
+          <text x="620" y="282" fill="#94a3b8" font-size="8" text-anchor="middle">merge commit</text>
+
+          <!-- Passo 3: commit de resolução -->
+          <circle cx="690" cy="300" r="6" fill="#fb923c" stroke="#020617" stroke-width="2"/>
+          <text x="690" y="282" fill="#fb923c" font-size="8" text-anchor="middle">3. resolve ✓</text>
+
+          <!-- Passo 4: merge conflict branch → develop (PR limpo) -->
+          <path d="M 760 306 Q 785 355 790 404" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan-3b)"/>
+          <text x="810" y="345" fill="#22d3ee" font-size="8" font-weight="600">4. PR → develop</text>
+          <text x="810" y="357" fill="#94a3b8" font-size="8">merge limpo ✓</text>
+          <circle cx="790" cy="410" r="7" fill="#22d3ee" stroke="#fbbf24" stroke-width="2"/>
+
+          <!-- Destaque: feature fica intacta -->
+          <rect x="550" y="158" width="220" height="56" rx="6" fill="rgba(52, 211, 153, 0.08)" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3"/>
+          <text x="660" y="176" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">✓ feature/xyz NÃO foi tocada</text>
+          <text x="660" y="190" fill="#94a3b8" font-size="8" text-anchor="middle">ainda será usada intacta</text>
+          <text x="660" y="202" fill="#94a3b8" font-size="8" text-anchor="middle">quando entrar na release</text>
+
+          <!-- ============= CALLOUT: PASSO-A-PASSO ============= -->
+          <rect x="840" y="60" width="340" height="430" rx="10" fill="rgba(15, 23, 42, 0.85)" stroke="#334155" stroke-width="1"/>
+
+          <text x="860" y="85" fill="#e2e8f0" font-size="12" font-weight="600">Passo-a-passo para resolver</text>
+          <line x1="860" y1="94" x2="1160" y2="94" stroke="#334155" stroke-width="1"/>
+
+          <!-- Step 1 -->
+          <circle cx="872" cy="118" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="872" y="122" fill="#22d3ee" font-size="10" font-weight="700" text-anchor="middle">1</text>
+          <text x="892" y="116" fill="#cbd5e1" font-size="10" font-weight="600">Atualize develop local</text>
+          <text x="892" y="130" fill="#64748b" font-size="9" font-family="JetBrains Mono">git checkout develop &amp;&amp; git pull</text>
+
+          <!-- Step 2 -->
+          <circle cx="872" cy="160" r="10" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1.5"/>
+          <text x="872" y="164" fill="#fb923c" font-size="10" font-weight="700" text-anchor="middle">2</text>
+          <text x="892" y="158" fill="#cbd5e1" font-size="10" font-weight="600">Crie a branch de conflito</text>
+          <text x="892" y="172" fill="#64748b" font-size="8" font-family="JetBrains Mono">git checkout -b \</text>
+          <text x="892" y="184" fill="#64748b" font-size="8" font-family="JetBrains Mono">  conflict/feat-xyz-to-develop</text>
+
+          <!-- Step 3 -->
+          <circle cx="872" cy="214" r="10" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399" stroke-width="1.5"/>
+          <text x="872" y="218" fill="#34d399" font-size="10" font-weight="700" text-anchor="middle">3</text>
+          <text x="892" y="212" fill="#cbd5e1" font-size="10" font-weight="600">Mergeie a feature aqui</text>
+          <text x="892" y="226" fill="#64748b" font-size="9" font-family="JetBrains Mono">git merge feature/xyz</text>
+
+          <!-- Step 4 -->
+          <circle cx="872" cy="256" r="10" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="872" y="260" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">4</text>
+          <text x="892" y="254" fill="#cbd5e1" font-size="10" font-weight="600">Resolva os conflitos</text>
+          <text x="892" y="268" fill="#64748b" font-size="9">edite os arquivos → <tspan font-family="JetBrains Mono">git add .</tspan></text>
+
+          <!-- Step 5 -->
+          <circle cx="872" cy="298" r="10" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="872" y="302" fill="#a78bfa" font-size="10" font-weight="700" text-anchor="middle">5</text>
+          <text x="892" y="296" fill="#cbd5e1" font-size="10" font-weight="600">Conclua o merge</text>
+          <text x="892" y="310" fill="#64748b" font-size="9" font-family="JetBrains Mono">git commit</text>
+
+          <!-- Step 6 -->
+          <circle cx="872" cy="340" r="10" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1.5"/>
+          <text x="872" y="344" fill="#fb923c" font-size="10" font-weight="700" text-anchor="middle">6</text>
+          <text x="892" y="338" fill="#cbd5e1" font-size="10" font-weight="600">Publique a branch</text>
+          <text x="892" y="352" fill="#64748b" font-size="8" font-family="JetBrains Mono">git push -u origin \</text>
+          <text x="892" y="364" fill="#64748b" font-size="8" font-family="JetBrains Mono">  conflict/feat-xyz-to-develop</text>
+
+          <!-- Step 7 -->
+          <circle cx="872" cy="394" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="872" y="398" fill="#22d3ee" font-size="10" font-weight="700" text-anchor="middle">7</text>
+          <text x="892" y="392" fill="#cbd5e1" font-size="10" font-weight="600">PR → develop + review + merge</text>
+          <text x="892" y="406" fill="#64748b" font-size="9">feature/xyz continua viva p/ release</text>
+
+          <!-- Por quê usar esta estratégia -->
+          <rect x="850" y="425" width="320" height="54" rx="6" fill="rgba(52, 211, 153, 0.08)" stroke="#34d399" stroke-width="1"/>
+          <text x="862" y="441" fill="#34d399" font-size="9" font-weight="600">Por quê não rebasear?</text>
+          <text x="862" y="455" fill="#cbd5e1" font-size="8">• feature continua viva e limpa p/ entrar em release</text>
+          <text x="862" y="467" fill="#cbd5e1" font-size="8">• resolução fica revisável em PR isolado</text>
+          <text x="862" y="479" fill="#cbd5e1" font-size="8">• zero force-push — o histórico da feature é preservado</text>
+        </svg>
+      </div>
+
+      <!-- COMANDOS GIT — Cenário B -->
+      <div class="cmd-block">
+        <div class="cmd-title"><span class="cmd-prompt">$</span> Comandos git — Cenário B: branch de resolução de conflito</div>
+        <div class="cmd-body">
+          <div>
+            <div class="cmd-group-label">1. Atualizar develop local</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout develop && git pull</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">2. Criar branch de resolução a partir de develop</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># prefixo conflict/ deixa claro a natureza da branch</span>
+              <span class="cmd-code">git checkout -b conflict/feature-xyz-to-develop</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">3. Mergear a feature na branch de resolução</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git merge feature/xyz</span>
+              <span class="cmd-comment"># aqui o conflito aparecerá localmente — é seguro, é uma branch sua</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">4. Resolver os conflitos e commitar</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># edite os arquivos conflitantes, depois:</span>
+              <span class="cmd-code">git add .</span>
+              <span class="cmd-code">git commit</span>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-label">5. Publicar a branch de resolução</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git push -u origin conflict/feature-xyz-to-develop</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">6. Abrir PR → develop</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>conflict/feature-xyz-to-develop</code> → <code>develop</code><br>
+              O revisor consegue ver exatamente como o conflito foi resolvido.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">7. Limpar a conflict branch após merge</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git branch -d conflict/feature-xyz-to-develop</span>
+              <span class="cmd-code">git push origin --delete conflict/feature-xyz-to-develop</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">✅ feature/xyz continua intacta para a release</div>
+            <div class="cmd-line">
+              <span class="cmd-comment"># quando chegar a hora, a feature entra na release via PR normalmente</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DIAGRAMA 4 — HOTFIX
+         ============================================================ -->
+    <section class="diagram-section">
+      <div class="diagram-title">
+        <span class="idx">04</span>
+        <h2>Hotfix (correção urgente em produção)</h2>
+      </div>
+      <p class="diagram-desc">
+        Hotfix nasce de <code style="color:#fb7185">master</code> (mesma regra das features), valida rápido em
+        <code style="color:#22d3ee">develop</code>, gera uma <code style="color:#fbbf24">release/vX.X.1</code>
+        patch, deploya, merge-back + tag, sync final.
+      </p>
+      <div class="diagram-container">
+        <svg viewBox="0 0 1200 560">
+          <defs>
+            <marker id="arrow-slate-4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+            </marker>
+            <marker id="arrow-violet-4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+            </marker>
+            <marker id="arrow-amber-4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+            </marker>
+            <marker id="arrow-rose-4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+            </marker>
+            <marker id="arrow-cyan-4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+            </marker>
+            <pattern id="grid-4" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid-4)"/>
+
+          <!-- Branch labels -->
+          <rect x="20" y="60" width="130" height="40" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+          <text x="85" y="78" fill="white" font-size="11" font-weight="600" text-anchor="middle">master</text>
+          <text x="85" y="92" fill="#fb7185" font-size="8" text-anchor="middle">produção quebrada</text>
+
+          <rect x="20" y="180" width="130" height="40" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="85" y="198" fill="white" font-size="11" font-weight="600" text-anchor="middle">hotfix/bug-critico</text>
+          <text x="85" y="212" fill="#a78bfa" font-size="8" text-anchor="middle">urgente</text>
+
+          <rect x="20" y="300" width="130" height="40" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="85" y="318" fill="white" font-size="11" font-weight="600" text-anchor="middle">release/v1.2.1</text>
+          <text x="85" y="332" fill="#fbbf24" font-size="8" text-anchor="middle">patch</text>
+
+          <rect x="20" y="420" width="130" height="40" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="85" y="438" fill="white" font-size="11" font-weight="600" text-anchor="middle">develop</text>
+          <text x="85" y="452" fill="#22d3ee" font-size="8" text-anchor="middle">QA rápido</text>
+
+          <!-- Timelines -->
+          <line x1="160" y1="80"  x2="1160" y2="80"  stroke="#fb7185" stroke-width="2" opacity="0.4"/>
+          <line x1="220" y1="200" x2="760"  y2="200" stroke="#a78bfa" stroke-width="2" opacity="0.4"/>
+          <line x1="620" y1="320" x2="980"  y2="320" stroke="#fbbf24" stroke-width="2" opacity="0.4"/>
+          <line x1="160" y1="440" x2="1160" y2="440" stroke="#22d3ee" stroke-width="2" opacity="0.4"/>
+
+          <!-- master com tag v1.2.0 (último release) -->
+          <circle cx="200" cy="80" r="8" fill="#fb7185" stroke="#fbbf24" stroke-width="2"/>
+          <text x="200" y="58" fill="#fbbf24" font-size="10" font-weight="700" text-anchor="middle">🏷 v1.2.0</text>
+          <text x="200" y="46" fill="#fb7185" font-size="8" text-anchor="middle">(prod atual)</text>
+
+          <!-- 1. Hotfix nasce de master -->
+          <path d="M 220 86 L 220 194" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet-4)"/>
+          <text x="232" y="140" fill="#a78bfa" font-size="9">git checkout -b</text>
+          <text x="232" y="152" fill="#a78bfa" font-size="9">hotfix/bug-critico master</text>
+
+          <circle cx="220" cy="200" r="6" fill="#a78bfa" stroke="#020617" stroke-width="2"/>
+
+          <!-- 2. Commit de fix -->
+          <circle cx="320" cy="200" r="6" fill="#a78bfa" stroke="#020617" stroke-width="2"/>
+          <text x="320" y="184" fill="#94a3b8" font-size="8" text-anchor="middle">fix + testes</text>
+
+          <!-- 3. Merge em develop (validação rápida) -->
+          <path d="M 400 206 Q 400 320 400 434" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan-4)"/>
+          <text x="412" y="320" fill="#22d3ee" font-size="9">QA valida</text>
+          <text x="412" y="332" fill="#22d3ee" font-size="9">em minutos</text>
+          <circle cx="400" cy="440" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <!-- 4. Cria release/v1.2.1 a partir de master -->
+          <path d="M 600 86 Q 600 200 600 314" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber-4)"/>
+          <text x="612" y="170" fill="#fbbf24" font-size="9">checkout -b</text>
+          <text x="612" y="182" fill="#fbbf24" font-size="9">release/v1.2.1</text>
+          <circle cx="600" cy="80" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <circle cx="620" cy="320" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+
+          <!-- 5. Merge hotfix → release -->
+          <path d="M 680 206 Q 680 260 680 314" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-amber-4)"/>
+          <text x="692" y="262" fill="#fbbf24" font-size="9">merge hotfix</text>
+          <circle cx="680" cy="320" r="6" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+          <text x="720" y="204" fill="#475569" font-size="8">— fim</text>
+
+          <!-- 6. DEPLOY -->
+          <rect x="760" y="300" width="120" height="40" rx="6" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="2"/>
+          <text x="820" y="318" fill="#fbbf24" font-size="11" font-weight="700" text-anchor="middle">🚀 DEPLOY</text>
+          <text x="820" y="332" fill="#fbbf24" font-size="8" text-anchor="middle">v1.2.1 patch</text>
+
+          <!-- 7. Merge-back release → master + tag -->
+          <path d="M 940 314 L 940 86" fill="none" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrow-rose-4)"/>
+          <text x="952" y="220" fill="#fb7185" font-size="9">merge --no-ff</text>
+          <text x="952" y="232" fill="#fb7185" font-size="9">+ tag v1.2.1</text>
+          <circle cx="940" cy="80" r="8" fill="#fb7185" stroke="#fbbf24" stroke-width="2"/>
+          <text x="940" y="58" fill="#fbbf24" font-size="10" font-weight="700" text-anchor="middle">🏷 v1.2.1</text>
+          <text x="960" y="324" fill="#475569" font-size="8">— fim</text>
+
+          <!-- 8. Sync master → develop -->
+          <path d="M 1040 86 Q 1040 260 1040 434" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-cyan-4)"/>
+          <text x="1052" y="240" fill="#22d3ee" font-size="9">sync</text>
+          <text x="1052" y="252" fill="#22d3ee" font-size="9">master</text>
+          <text x="1052" y="264" fill="#22d3ee" font-size="9">→ develop</text>
+          <circle cx="1040" cy="80" r="6" fill="#fb7185" stroke="#020617" stroke-width="2"/>
+          <circle cx="1040" cy="440" r="6" fill="#22d3ee" stroke="#020617" stroke-width="2"/>
+
+          <!-- Numeração das etapas no topo -->
+          <g opacity="0.9">
+            <circle cx="220" cy="500" r="10" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa" stroke-width="1"/>
+            <text x="220" y="504" fill="#a78bfa" font-size="9" font-weight="700" text-anchor="middle">1</text>
+            <text x="220" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">nasce</text>
+
+            <circle cx="400" cy="500" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1"/>
+            <text x="400" y="504" fill="#22d3ee" font-size="9" font-weight="700" text-anchor="middle">2</text>
+            <text x="400" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">QA</text>
+
+            <circle cx="620" cy="500" r="10" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="1"/>
+            <text x="620" y="504" fill="#fbbf24" font-size="9" font-weight="700" text-anchor="middle">3</text>
+            <text x="620" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">release patch</text>
+
+            <circle cx="820" cy="500" r="10" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24" stroke-width="1"/>
+            <text x="820" y="504" fill="#fbbf24" font-size="9" font-weight="700" text-anchor="middle">4</text>
+            <text x="820" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">deploy</text>
+
+            <circle cx="940" cy="500" r="10" fill="rgba(251, 113, 133, 0.2)" stroke="#fb7185" stroke-width="1"/>
+            <text x="940" y="504" fill="#fb7185" font-size="9" font-weight="700" text-anchor="middle">5</text>
+            <text x="940" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">merge-back + tag</text>
+
+            <circle cx="1040" cy="500" r="10" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee" stroke-width="1"/>
+            <text x="1040" y="504" fill="#22d3ee" font-size="9" font-weight="700" text-anchor="middle">6</text>
+            <text x="1040" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">sync</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- COMANDOS GIT — seção 4 -->
+      <div class="cmd-block">
+        <div class="cmd-title"><span class="cmd-prompt">$</span> Comandos git — Hotfix completo</div>
+        <div class="cmd-body">
+          <div>
+            <div class="cmd-group-label">1. Criar hotfix a partir de master</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout master && git pull</span>
+              <span class="cmd-code">git checkout -b hotfix/bug-critico</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">2. Corrigir, commitar e publicar</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git add .</span>
+              <span class="cmd-code">git commit -m "fix: corrige bug crítico X em produção"</span>
+              <span class="cmd-code">git push -u origin hotfix/bug-critico</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">3. Validar em develop (QA rápido) via PR</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>hotfix/bug-critico</code> → <code>develop</code><br>
+              Review rápido e merge para validar o fix no ambiente de QA.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">4. Criar release patch a partir de master</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout master && git pull</span>
+              <span class="cmd-code">git checkout -b release/v1.2.1</span>
+              <span class="cmd-code">git push -u origin release/v1.2.1</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">5. Agregar o hotfix na release via PR</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>hotfix/bug-critico</code> → <code>release/v1.2.1</code><br>
+              Aprovado → merge → CI/CD deploya.</span>
+            </div>
+          </div>
+          <div>
+            <div class="cmd-group-label">6. Tag local após deploy OK</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git checkout release/v1.2.1 && git pull</span>
+              <span class="cmd-code">git tag -a v1.2.1 -m "Hotfix 1.2.1 — corrige bug X"</span>
+              <span class="cmd-code">git push origin v1.2.1</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">7. Merge-back release → master via PR</div>
+            <div class="cmd-divider">Bitbucket</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>release/v1.2.1</code> → <code>master</code></span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">8. Sync master → develop via PR</div>
+            <div class="pr-action">
+              <span class="pr-badge">PR</span>
+              <span class="pr-text">Abra Pull Request: <code>master</code> → <code>develop</code><br>
+              Garante que o fix de produção chegue ao ambiente de QA.</span>
+            </div>
+            <div class="cmd-group-label" style="margin-top:0.875rem;">9. Limpar branches</div>
+            <div class="cmd-line">
+              <span class="cmd-code">git branch -d hotfix/bug-critico release/v1.2.1</span>
+              <span class="cmd-code">git push origin --delete hotfix/bug-critico release/v1.2.1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CARDS DE REFERÊNCIA
+         ============================================================ -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>Regras de ouro</h3>
+        </div>
+        <ul>
+          <li>• <code>master</code> é fonte da verdade — protegida, só merge via PR</li>
+          <li>• <code>feature/*</code> e <code>hotfix/*</code> sempre nascem de <code>master</code></li>
+          <li>• <code>develop</code> é ambiente de QA, nunca alvo de deploy</li>
+          <li>• Deploy sai de <code>release/vX.X.X</code>, nunca de <code>develop</code></li>
+          <li>• Após deploy: merge-back em <code>master</code> com tag + sync <code>master → develop</code></li>
+          <li>• Nunca force-push em <code>master</code>, <code>develop</code> ou <code>release/*</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Comandos essenciais</h3>
+        </div>
+        <ul>
+          <li>• <code>git checkout -b feature/xyz master</code></li>
+          <li>• <code>git fetch origin &amp;&amp; git rebase origin/master</code></li>
+          <li>• <code>git push --force-with-lease</code> <em style="color:#64748b">(só em feature/*)</em></li>
+          <li>• <code>git checkout -b conflict/feat-xyz-to-develop develop</code></li>
+          <li>• <code>git merge feature/xyz</code> <em style="color:#64748b">(na conflict branch)</em></li>
+          <li>• <code>git checkout -b release/v1.2.0 master</code></li>
+          <li>• <code>git merge --no-ff feature/xyz</code></li>
+          <li>• <code>git tag -a v1.2.0 -m "Release 1.2.0"</code></li>
+          <li>• <code>git push origin v1.2.0</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Checklist pós-deploy</h3>
+        </div>
+        <ul>
+          <li>☐ Deploy validado em produção (smoke tests)</li>
+          <li>☐ <code>release/vX.X.X</code> mergeada em <code>master</code> (--no-ff)</li>
+          <li>☐ Tag <code>vX.X.X</code> criada e pushada</li>
+          <li>☐ <code>master</code> sincronizada em <code>develop</code></li>
+          <li>☐ Branches <code>feature/*</code> incluídas na release foram deletadas</li>
+          <li>☐ Release notes publicadas</li>
+          <li>☐ <code>release/vX.X.X</code> deletada (a tag preserva o histórico)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">
+      GitFlow Simplificado - BuniFlow • master-first • Node.js / TypeScript workflow
+    </p>
+  </div>
+</body>
+</html>
