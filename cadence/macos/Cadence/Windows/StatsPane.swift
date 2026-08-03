@@ -74,7 +74,7 @@ struct StatsPane: View {
 
     private var chart: some View {
         Chart {
-            ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
+            ForEach(buckets) { bucket in
                 BarMark(
                     x: .value("Period", bucket.start, unit: granularity.calendarComponent),
                     y: .value("Minutes", animateBars ? bucket.focusMinutes : 0)
@@ -88,12 +88,6 @@ struct StatsPane: View {
                 )
                 .cornerRadius(6)
                 .opacity(selected == nil || selected == bucket.start ? 1 : 0.35)
-                // Swift Charts animates data changes natively; the per-bar
-                // stagger is what makes it feel deliberate rather than abrupt.
-                .animation(
-                    motion.reveal.delay(motion.reduceMotion ? 0 : Double(index) * 0.02),
-                    value: animateBars
-                )
             }
 
             if average > 0 {
@@ -107,6 +101,11 @@ struct StatsPane: View {
                     }
             }
         }
+        // `.animation` is a View modifier and `ChartContent` has no such member,
+        // so this belongs on the chart rather than on each BarMark. Swift Charts
+        // interpolates the data change itself; the trade-off against the
+        // per-mark version is that the bars grow together instead of staggering.
+        .animation(motion.reveal, value: animateBars)
         .chartXSelection(value: $selected)
         .chartYAxis {
             AxisMarks { value in

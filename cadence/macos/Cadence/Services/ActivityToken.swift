@@ -13,7 +13,7 @@ import Foundation
 @MainActor
 final class ActivityToken {
 
-    private var token: NSObjectProtocol?
+    private var token: (any NSObjectProtocol)?
     private var preventsSleep = false
 
     func setPreventsSleep(_ preventsSleep: Bool) {

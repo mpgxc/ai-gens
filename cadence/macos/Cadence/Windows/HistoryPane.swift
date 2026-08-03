@@ -39,11 +39,17 @@ struct HistoryPane: View {
                         ForEach(days) { day in
                             Section {
                                 ForEach(day.sessions) { session in
+                                    // `reduceMotion` is read once, outside the
+                                    // closure: `scrollTransition`'s builder is
+                                    // nonisolated, so touching the main-actor
+                                    // `motion` from inside it is a data race
+                                    // that Swift 6 flags.
+                                    let reduceMotion = motion.reduceMotion
                                     row(session)
                                         .scrollTransition { content, phase in
                                             content
                                                 .opacity(phase.isIdentity ? 1 : 0)
-                                                .scaleEffect(phase.isIdentity || motion.reduceMotion ? 1 : 0.96)
+                                                .scaleEffect(phase.isIdentity || reduceMotion ? 1 : 0.96)
                                         }
                                 }
                             } header: {
