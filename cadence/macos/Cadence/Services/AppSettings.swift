@@ -17,6 +17,22 @@ enum MenuBarStyle: String, CaseIterable, Identifiable, Sendable {
     var showsTime: Bool { self != .ringOnly }
 }
 
+enum MusicSourceKind: String, CaseIterable, Identifiable, Sendable {
+    case off, file, folder, stream
+    var id: String { rawValue }
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .off:    "Off"
+        case .file:   "One track"
+        case .folder: "Folder"
+        case .stream: "Stream URL"
+        }
+    }
+
+    var needsBookmark: Bool { self == .file || self == .folder }
+}
+
 /// Every preference, and the single place their `UserDefaults` keys are spelled.
 ///
 /// Stored properties (not computed) so `@Observable` actually tracks them;
@@ -30,6 +46,7 @@ final class AppSettings {
         case autoStartBreaks, autoStartFocus
         case menuBarStyle, colouredMenuBarIcon
         case soundEnabled, launchAtLogin, preventSleepDuringFocus
+        case musicSourceKind, musicBookmark, musicStreamURL, musicVolume, musicShuffle
     }
 
     var focusMinutes: Int          { didSet { write(.focusMinutes, focusMinutes) } }
@@ -47,6 +64,29 @@ final class AppSettings {
 
     var soundEnabled: Bool         { didSet { write(.soundEnabled, soundEnabled) } }
     var preventSleepDuringFocus: Bool { didSet { write(.preventSleepDuringFocus, preventSleepDuringFocus) } }
+
+    // MARK: Focus music
+
+    var musicSourceKind: MusicSourceKind { didSet { write(.musicSourceKind, musicSourceKind.rawValue) } }
+    var musicStreamURL: String           { didSet { write(.musicStreamURL, musicStreamURL) } }
+    var musicVolume: Double              { didSet { write(.musicVolume, musicVolume) } }
+    var musicShuffle: Bool               { didSet { write(.musicShuffle, musicShuffle) } }
+
+    /// A security-scoped bookmark, not a path. Inside the sandbox a plain path
+    /// to a user-picked file stops resolving after relaunch; the bookmark is
+    /// what survives.
+    var musicBookmark: Data? {
+        didSet {
+            if let musicBookmark { write(.musicBookmark, musicBookmark) }
+            else { defaults.removeObject(forKey: Key.musicBookmark.rawValue); onChange?() }
+        }
+    }
+
+    /// What `MusicPlayer` should be configured with, rebuilt from the three
+    /// persisted pieces.
+    var musicSource: MusicPlayer.Source {
+        .restore(kind: musicSourceKind, bookmark: musicBookmark, streamURL: musicStreamURL)
+    }
 
     var launchAtLogin: Bool {
         didSet {
@@ -85,6 +125,15 @@ final class AppSettings {
         launchAtLogin     = bool(.launchAtLogin, false)
         menuBarStyle      = MenuBarStyle(rawValue: defaults.string(forKey: Key.menuBarStyle.rawValue) ?? "")
             ?? .ringAndTime
+
+        musicSourceKind = MusicSourceKind(rawValue: defaults.string(forKey: Key.musicSourceKind.rawValue) ?? "")
+            ?? .off
+        musicStreamURL  = defaults.string(forKey: Key.musicStreamURL.rawValue) ?? ""
+        musicBookmark   = defaults.data(forKey: Key.musicBookmark.rawValue)
+        musicShuffle    = bool(.musicShuffle, true)
+        musicVolume     = defaults.object(forKey: Key.musicVolume.rawValue) == nil
+            ? 0.6
+            : defaults.double(forKey: Key.musicVolume.rawValue)
     }
 
     /// The value type the engine actually consumes.

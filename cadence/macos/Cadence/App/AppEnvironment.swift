@@ -14,6 +14,7 @@ final class AppEnvironment {
     let iconRenderer = StatusIconRenderer()
     let notifications = NotificationService()
     let sound = SoundService()
+    let music = MusicPlayer()
 
     @ObservationIgnored private let activity = ActivityToken()
     @ObservationIgnored private let power = PowerEventsService()
@@ -75,6 +76,7 @@ final class AppEnvironment {
     /// Called on `willTerminate` — the debounced save must not be the last word.
     func shutdown() async {
         await history.flush()
+        music.stopImmediately()   // also closes the security-scoped file access
         power.stop()
         ticker.stop()
     }
@@ -106,6 +108,9 @@ final class AppEnvironment {
             setBusy: { [activity] busy in
                 activity.setBusy(busy)
             },
+            setMusicPlaying: { [music] playing in
+                playing ? music.start() : music.fadeOutAndStop()
+            },
             persistState: { [file] snapshot in
                 let state = PersistedState(snapshot)
                 Task { await file.saveState(state) }
@@ -117,5 +122,10 @@ final class AppEnvironment {
         engine.config = settings.timerConfig
         sound.setEnabled(settings.soundEnabled)
         activity.setPreventsSleep(settings.preventSleepDuringFocus)
+        music.configure(
+            source: settings.musicSource,
+            volume: settings.musicVolume,
+            shuffle: settings.musicShuffle
+        )
     }
 }

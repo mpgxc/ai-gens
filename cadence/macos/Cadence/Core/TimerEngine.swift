@@ -15,6 +15,10 @@ struct TimerEffects {
     /// Holds/releases the `ProcessInfo` activity that keeps App Nap away
     /// while a phase is actually running.
     var setBusy: (Bool) -> Void = { _ in }
+    /// Focus music. Keyed on *phase*, not on running-ness: a break is running
+    /// too, and the whole point of a break is that the working soundtrack
+    /// stops. Passing `false` fades out rather than cutting.
+    var setMusicPlaying: (Bool) -> Void = { _ in }
     var persistState: (TimerSnapshot) -> Void = { _ in }
 }
 
@@ -107,6 +111,7 @@ final class TimerEngine {
         snapshot.run = .paused(remaining: remaining)
         effects.cancelAlerts()
         effects.setBusy(false)
+        effects.setMusicPlaying(false)
         effects.persistState(snapshot)
     }
 
@@ -123,6 +128,7 @@ final class TimerEngine {
         cancelArmed()
         effects.cancelAlerts()
         effects.setBusy(false)
+        effects.setMusicPlaying(false)
         missedPhase = nil
         awaitingStart = false
         pausedAt = nil
@@ -185,6 +191,7 @@ final class TimerEngine {
         effects.cancelAlerts()
         effects.scheduleAlert(snapshot.phase, deadline)
         effects.setBusy(true)
+        effects.setMusicPlaying(snapshot.phase == .focus)
         effects.persistState(snapshot)
         arm(until: instant)
     }
@@ -215,6 +222,10 @@ final class TimerEngine {
         cancelArmed()
         effects.cancelAlerts()
         effects.setBusy(false)
+        // Fade out here rather than after the phase advances, so the music
+        // trails off with the block that earned it. If the next phase is focus
+        // and auto-start is on, `run(for:)` brings it back in a moment later.
+        effects.setMusicPlaying(false)
 
         let didComplete = (reason == .reachedDeadline || reason == .missedWhileAsleep)
         recordSession(endedAt: endedAt, completed: didComplete)
