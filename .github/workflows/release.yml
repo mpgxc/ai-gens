@@ -86,6 +86,13 @@ jobs:
             -srcfolder stage \
             -ov -format UDZO \
             "dist/Cadence-${VERSION}.dmg"
+
+          # Second copy under a fixed name. GitHub serves
+          #   /releases/latest/download/<asset-name>
+          # by exact filename, so a versioned name would make the landing
+          # page's download link 404 on every new release. The versioned copy
+          # stays for anyone browsing the releases list.
+          cp "dist/Cadence-${VERSION}.dmg" "dist/Cadence.dmg"
           ls -lh dist
 
       # Always available, even for a dispatch run with no tag to attach to.

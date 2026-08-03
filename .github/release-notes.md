@@ -2,7 +2,13 @@ A focus timer that lives in your menu bar. Native macOS, built on Liquid Glass.
 
 ### Install
 
-Download the `.dmg`, drag Cadence to **Applications**, then run:
+Every release ships two identical disk images: `Cadence-<version>.dmg` for the
+archive, and `Cadence.dmg` under a fixed name so this URL always resolves to the
+newest build and never has to be updated:
+
+<https://github.com/mpgxc/ai-gens/releases/latest/download/Cadence.dmg>
+
+Download it, drag Cadence to **Applications**, then run:
 
 ```
 xattr -dr com.apple.quarantine /Applications/Cadence.app

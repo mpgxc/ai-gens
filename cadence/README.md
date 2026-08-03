@@ -86,6 +86,12 @@ That is the whole release process. The workflow creates the GitHub release if
 the tag doesn't have one yet, using [`.github/release-notes.md`](../.github/release-notes.md)
 as the body — edit that file to change the boilerplate.
 
+Each release gets **two identical disk images**: `Cadence-<version>.dmg` for the
+archive, and `Cadence.dmg` under a fixed name. GitHub resolves
+`/releases/latest/download/<asset>` by exact filename, so the fixed name is what
+lets the landing page link straight at the newest `.dmg` without the link
+breaking every time the version changes.
+
 It runs on tags only, plus `workflow_dispatch` if you want a compile check
 without cutting a release — a push to `main` never triggers a macOS build.
 
