@@ -910,10 +910,12 @@ footer a:hover { color: var(--fg); }
         <div class="notice">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></svg>
           <p>
-            <strong>v0.1.0 ships the source, not a signed app.</strong>
-            Clone it, run <code>xcodegen generate</code> in <code>cadence/macos</code>, and hit ⌘R in Xcode —
-            about a minute. Once a <code>.dmg</code> is attached to a release it will still be unsigned,
-            so macOS will ask you to right-click → <em>Open</em> the first time.
+            <strong>Cadence isn't signed by a registered developer</strong>, so macOS quarantines it on
+            download. Drag it to Applications, then run
+            <code>xattr -dr com.apple.quarantine /Applications/Cadence.app</code> once before the first
+            launch. That clears a single flag — it doesn't turn off any system security setting.
+            Prefer building it yourself? <code>xcodegen generate</code> in <code>cadence/macos</code>,
+            then ⌘R in Xcode.
           </p>
         </div>
       </div>

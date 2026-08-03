@@ -2,16 +2,25 @@ A focus timer that lives in your menu bar. Native macOS, built on Liquid Glass.
 
 ### Install
 
-Download the `.dmg` below and drag Cadence to Applications.
-
-**The app is unsigned**, so macOS will refuse to open it the first time. This is
-expected: signing requires a Developer ID certificate that this repository does
-not have. Either right-click the app → **Open** → **Open**, or clear the
-quarantine flag:
+Download the `.dmg`, drag Cadence to **Applications**, then run:
 
 ```
 xattr -dr com.apple.quarantine /Applications/Cadence.app
 ```
+
+Do this before the first launch. Cadence is only **ad-hoc signed** — proper
+signing needs a Developer ID certificate this repository does not have — so
+macOS quarantines it on download and refuses to open it. The command clears
+that one flag and nothing else; it does not disable any system-wide security
+setting.
+
+It has to run against the copy in Applications, not the one on the mounted disk
+image, which is read-only. If it reports a permissions error, prefix it with
+`sudo`.
+
+The Settings route works too: try to open Cadence, then go to **System Settings
+→ Privacy & Security** and click **Open Anyway**. Right-click → *Open* used to
+be the trick for this, but macOS 15 removed it — don't waste time on it.
 
 Requires **macOS 26 Tahoe or later** — the interface is built on `glassEffect`
 and `GlassEffectContainer`, which do not exist on earlier versions.

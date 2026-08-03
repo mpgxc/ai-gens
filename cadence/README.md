@@ -89,11 +89,23 @@ as the body — edit that file to change the boilerplate.
 It runs on tags only, plus `workflow_dispatch` if you want a compile check
 without cutting a release — a push to `main` never triggers a macOS build.
 
-The `.dmg` is **unsigned**: signing needs a Developer ID certificate in repo
-secrets, and there isn't one. macOS quarantines it, so the first launch needs
-right-click → Open (or `xattr -dr com.apple.quarantine Cadence.app`). Both the
-release notes and the landing page say so rather than letting people hit a
-Gatekeeper wall unprepared.
+The `.dmg` is **ad-hoc signed**, not Developer ID signed — that needs a
+certificate in repo secrets and there isn't one. macOS quarantines it on
+download, so the first launch needs:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Cadence.app
+```
+
+Ad-hoc rather than fully unsigned is a deliberate choice. A bundle with *no*
+signature makes Gatekeeper report `"Cadence" is damaged and can't be opened`,
+offering only **Move to Trash** — which reads as a corrupt download and is a
+terrible first impression. An ad-hoc signature is structurally valid, just
+untrusted, so the block degrades to the ordinary unidentified-developer path
+that **System Settings → Privacy & Security → Open Anyway** can clear.
+
+Right-click → *Open* is no longer a workaround; macOS 15 removed it. Don't
+document it.
 
 ### Three things that will bite you on first build
 
