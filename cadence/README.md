@@ -82,6 +82,10 @@ target at all) and packages a `.dmg`.
 git tag v0.2.0 && git push origin v0.2.0   # cuts a release and attaches the .dmg
 ```
 
+That is the whole release process. The workflow creates the GitHub release if
+the tag doesn't have one yet, using [`.github/release-notes.md`](../.github/release-notes.md)
+as the body — edit that file to change the boilerplate.
+
 It runs on tags only, plus `workflow_dispatch` if you want a compile check
 without cutting a release — a push to `main` never triggers a macOS build.
 

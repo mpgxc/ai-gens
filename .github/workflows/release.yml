@@ -79,8 +79,20 @@ jobs:
           path: dist/*.dmg
           if-no-files-found: error
 
-      - name: Attach to release
+      # Creates the release when the tag doesn't have one yet, so cutting a
+      # release is exactly `git tag vX.Y.Z && git push origin vX.Y.Z` and
+      # nothing else. Uploading to a release that does not exist would fail,
+      # and there is no way to pre-create one from a tag push.
+      - name: Publish release
         if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/*.dmg --clobber
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" dist/*.dmg --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.dmg \
+              --title "Cadence $GITHUB_REF_NAME" \
+              --notes-file .github/release-notes.md
+          fi
