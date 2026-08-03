@@ -1,0 +1,86 @@
+name: Build Cadence (macOS)
+
+# Deliberately NOT on push-to-main: the app is built on a macOS runner, which
+# is slow and only meaningful when you actually want a build. Tagging cuts a
+# release; workflow_dispatch gives you a compile check without one.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # macos-26 is Apple silicon and ships Xcode 26.x by default, which is what
+    # Liquid Glass (glassEffect, GlassEffectContainer) requires. An older image
+    # cannot build this target at all — it has no macOS 26 SDK.
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          echo "SDKs:"; xcodebuild -showsdks | grep -i macos || true
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: cadence/macos
+        run: xcodegen generate
+
+      # Unsigned on purpose: signing needs a Developer ID certificate in
+      # secrets, and this repo has none. The resulting app is Gatekeeper-
+      # quarantined, which the release notes and the landing page both say.
+      - name: Build
+        working-directory: cadence/macos
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Cadence.xcodeproj \
+            -scheme Cadence \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package .dmg
+        id: package
+        run: |
+          set -euo pipefail
+          APP="cadence/macos/build/Build/Products/Release/Cadence.app"
+          test -d "$APP" || { echo "::error::no .app at $APP"; exit 1; }
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          [ "$GITHUB_REF_TYPE" = "tag" ] || VERSION="dev-${GITHUB_SHA::7}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          mkdir -p stage dist
+          cp -R "$APP" stage/
+          ln -s /Applications stage/Applications      # drag-to-install target
+          hdiutil create \
+            -volname "Cadence" \
+            -srcfolder stage \
+            -ov -format UDZO \
+            "dist/Cadence-${VERSION}.dmg"
+          ls -lh dist
+
+      # Always available, even for a dispatch run with no tag to attach to.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cadence-${{ steps.package.outputs.version }}-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" dist/*.dmg --clobber
