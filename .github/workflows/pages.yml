@@ -1,0 +1,76 @@
+name: Deploy to GitHub Pages
+
+# Replaces the classic branch-based Pages build. Requires the Pages source to
+# be set to "GitHub Actions" once, in Settings -> Pages -> Build and deployment.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'cadence/landing/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deployment that is already publishing; just queue behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Assemble an explicit _site rather than publishing the repo root, which
+      # would ship .git and the Swift sources to a web host for no reason.
+      # Paths here must keep the URLs the classic build already served.
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/cadence
+          cp ./*.html _site/
+          cp -R cadence/landing _site/cadence/landing
+
+      # Fail loudly rather than publishing an empty site, which otherwise looks
+      # like a successful deploy right up until someone opens the URL.
+      - name: Verify expected files
+        run: |
+          set -euo pipefail
+          for f in \
+            _site/index.html \
+            _site/gitflow-belike.html \
+            _site/guia-arquitetura-e-design.html \
+            _site/cadence/landing/index.html
+          do
+            test -s "$f" || { echo "::error::missing or empty: $f"; exit 1; }
+          done
+          # The landing page is meant to be fully self-contained; a stray CDN or
+          # webfont reference is a regression worth catching here.
+          if grep -qE 'https?://[^"'"'"']*\.(js|css|woff2?)' _site/cadence/landing/index.html; then
+            echo "::error::cadence/landing/index.html gained an external asset reference"
+            exit 1
+          fi
+          echo "site contents:"; find _site -type f | sort
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
