@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ai-gens — artefatos</title>
+<meta name="description" content="Coletânea de artefatos gerados: guias técnicos, diagramas e projetos.">
+<meta name="color-scheme" content="dark">
+<style>
+  :root {
+    --bg: #020617;
+    --fg: #e2e8f0;
+    --muted: #94a3b8;
+    --faint: #64748b;
+    --line: #1e293b;
+    --amber: #fbbf24;
+    --violet: #a78bfa;
+    --cyan: #22d3ee;
+    --rose: #fb7185;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'JetBrains Mono', Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    padding: clamp(2rem, 7vw, 5rem) 1.5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgb(251 191 36 / .08);
+    border: 1px solid rgb(251 191 36 / .3);
+    color: var(--amber);
+    padding: .375rem .875rem; border-radius: 999px;
+    font-size: .65rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
+
+  h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); letter-spacing: -.03em; line-height: 1.1; margin-bottom: .75rem; }
+  .lead { color: var(--muted); font-size: .9rem; max-width: 60ch; margin-bottom: 3rem; }
+
+  ul { list-style: none; display: flex; flex-direction: column; gap: .75rem; }
+
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    border: 1px solid var(--line); border-radius: .75rem;
+    padding: 1.1rem 1.25rem;
+    transition: border-color .25s ease, background .25s ease, transform .25s ease;
+  }
+  a.card:hover { border-color: var(--accent); background: rgb(148 163 184 / .04); transform: translateY(-2px); }
+  a.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .row { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; }
+  .name { font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
+  .tag {
+    font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
+    color: var(--accent); border: 1px solid; border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+    padding: .15rem .5rem; border-radius: 999px;
+  }
+  .desc { color: var(--muted); font-size: .8rem; margin-top: .4rem; }
+  .path { color: var(--faint); font-size: .7rem; margin-top: .5rem; }
+
+  footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--faint); font-size: .72rem; }
+  footer a { color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    a.card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge"><span class="dot"></span>ai-gens</span>
+  <h1>Artefatos</h1>
+  <p class="lead">
+    Guias técnicos, diagramas e projetos — cada um autocontido, sem build e sem dependências externas.
+  </p>
+
+  <ul>
+    <li style="--accent: var(--rose)">
+      <a class="card" href="./cadence/landing/">
+        <div class="row">
+          <span class="name">Cadence</span>
+          <span class="tag">Projeto</span>
+        </div>
+        <p class="desc">Timer de foco Pomodoro nativo para macOS, na barra de menus. Landing page com demo ao vivo.</p>
+        <p class="path">cadence/landing/</p>
+      </a>
+    </li>
+
+    <li style="--accent: var(--violet)">
+      <a class="card" href="./guia-arquitetura-e-design.html">
+        <div class="row">
+          <span class="name">Padrões de Arquitetura de Software</span>
+          <span class="tag">Guia</span>
+        </div>
+        <p class="desc">Níveis de decisão arquitetural, Hexagonal vs Clean, DDD estratégico e tático, e combinações reais.</p>
+        <p class="path">guia-arquitetura-e-design.html</p>
+      </a>
+    </li>
+
+    <li style="--accent: var(--cyan)">
+      <a class="card" href="./gitflow-belike.html">
+        <div class="row">
+          <span class="name">GitFlow Simplificado</span>
+          <span class="tag">Diagramas</span>
+        </div>
+        <p class="desc">Fluxos de feature, release, hotfix e resolução de conflitos.</p>
+        <p class="path">gitflow-belike.html</p>
+      </a>
+    </li>
+  </ul>
+
+  <footer>
+    <a href="https://github.com/mpgxc/ai-gens">github.com/mpgxc/ai-gens</a>
+  </footer>
+</div>
+</body>
+</html>
