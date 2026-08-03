@@ -1,0 +1,68 @@
+name: Cadence
+
+options:
+  bundleIdPrefix: com.mpgxc
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+  developmentLanguage: en
+
+fileGroups:
+  - project.yml
+
+knownRegions:
+  - en
+  - pt-BR
+  - Base
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEAD_CODE_STRIPPING: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  Cadence:
+    type: application
+    platform: macOS
+    sources:
+      - path: Cadence
+        # Xcode 26 synchronised folder: files added on disk appear in the
+        # project without a pbxproj edit.
+        createIntermediateGroups: true
+    settings:
+      base:
+        PRODUCT_NAME: Cadence
+        PRODUCT_BUNDLE_IDENTIFIER: com.mpgxc.Cadence
+        GENERATE_INFOPLIST_FILE: YES
+
+        # Menu-bar-only: no Dock icon, no app menu until a window opens.
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Cadence"
+        INFOPLIST_KEY_CFBundleDisplayName: Cadence
+
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+        # English is the development language; pt-BR lives in the String Catalog.
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+
+        # Sandbox is on from day one on purpose: switching it on later would
+        # relocate Application Support into a container and orphan the user's
+        # history. No extra entitlements are needed — Cadence touches nothing
+        # outside its own container and makes no network calls.
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_ENTITLEMENTS: Cadence/Cadence.entitlements
+
+        # Set your own team here (a free personal one is enough).
+        # UNUserNotificationCenter requires a signed bundle: run the app target
+        # from Xcode, never a bare binary.
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""

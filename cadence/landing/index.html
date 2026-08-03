@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadence — a focus timer that lives in your menu bar</title>
+<meta name="description" content="Cadence is a native macOS Pomodoro timer. Deadline-accurate, built on Liquid Glass, and readable at a glance from the menu bar. Free, no account, no ads.">
+<meta name="color-scheme" content="dark light">
+<style>
+/* ============================================================
+   REGISTERED CUSTOM PROPERTIES
+   Registering makes these interpolatable, which is what lets the
+   phase palette crossfade and the rim light travel around a border.
+   ============================================================ */
+@property --phase-a { syntax: '<color>'; inherits: true; initial-value: #FF9A4D; }
+@property --phase-b { syntax: '<color>'; inherits: true; initial-value: #FF5F6D; }
+@property --rim     { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root {
+  --bg:        #06070D;
+  --fg:        #F3F5FB;
+  --muted:     #98A1B7;
+  --faint:     #6B7285;
+
+  --glass-fill:   rgb(255 255 255 / .055);
+  --glass-fill-2: rgb(255 255 255 / .085);
+  --glass-hi:     rgb(255 255 255 / .30);
+  --glass-hi-2:   rgb(255 255 255 / .07);
+  --glass-shadow: 0 8px 32px rgb(0 0 0 / .40), 0 2px 8px rgb(0 0 0 / .25);
+  --hairline:     rgb(255 255 255 / .10);
+  --sheen:        .16;
+  --mesh-alpha:   .58;
+
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+
+  --maxw: 1120px;
+
+  /* System monospace. On a Mac this resolves to SF Mono, which is both the
+     right look for a macOS product and zero bytes over the wire — the page
+     makes no external requests at all. */
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
+
+  /* Spring-ish easing, expressed as a sampled linear() curve so CSS
+     transitions get real overshoot instead of a symmetric ease. */
+  --ease-spring: linear(
+    0, 0.0068 1.6%, 0.0277 3.3%, 0.1035 6.6%, 0.2266 10%, 0.3872 13.5%,
+    0.5711 17.1%, 0.7628 20.9%, 0.9469 24.9%, 1.0367 27%, 1.1088 29.2%,
+    1.1615 31.5%, 1.1937 34%, 1.2049 36.8%, 1.1955 39.9%, 1.1665 43.4%,
+    1.1198 47.4%, 1.0591 52.1%, 0.9977 57%, 0.9556 61%, 0.9337 64.4%,
+    0.9276 68.4%, 0.9367 73.5%, 0.9629 80.5%, 0.9942 88.3%, 1
+  );
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:        #E9ECF4;
+    --fg:        #0C0F18;
+    --muted:     #565D73;
+    --faint:     #838AA0;
+
+    --glass-fill:   rgb(255 255 255 / .48);
+    --glass-fill-2: rgb(255 255 255 / .62);
+    --glass-hi:     rgb(255 255 255 / .95);
+    --glass-hi-2:   rgb(255 255 255 / .35);
+    --glass-shadow: 0 8px 32px rgb(20 24 40 / .13), 0 2px 8px rgb(20 24 40 / .07);
+    --hairline:     rgb(12 15 24 / .09);
+    --sheen:        .55;
+    --mesh-alpha:   .72;
+  }
+}
+
+/* Phase palettes. Transitioning these on <body> crossfades every
+   surface that references them — ring, glass tints, mesh, buttons. */
+body { --phase-a: #FF9A4D; --phase-b: #FF5F6D; }
+body[data-phase="shortBreak"] { --phase-a: #4DE1C1; --phase-b: #38BDF8; }
+body[data-phase="longBreak"]  { --phase-a: #A78BFA; --phase-b: #6D8BFA; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: --phase-a 1.1s var(--ease-out), --phase-b 1.1s var(--ease-out);
+}
+
+::selection { background: color-mix(in oklab, var(--phase-a) 40%, transparent); }
+
+.mono { font-family: var(--mono); }
+
+/* Shared ring gradient. Driven from CSS so the phase palette animates. */
+.stop-a { stop-color: var(--phase-a); }
+.stop-b { stop-color: var(--phase-b); }
+
+/* ============================================================
+   MESH BACKDROP
+   Blurred blobs on transform-only animations (compositor-friendly).
+   This is what gives every glass surface something worth refracting.
+   ============================================================ */
+.mesh { position: fixed; inset: -20vmax; z-index: -2; pointer-events: none; opacity: var(--mesh-alpha); }
+.blob { position: absolute; border-radius: 50%; filter: blur(70px); will-change: transform; }
+.blob-1 { width: 46vmax; height: 46vmax; left: 4%;  top: -4%;  background: radial-gradient(circle at 50% 50%, var(--phase-a), transparent 68%); animation: drift-1 27s ease-in-out infinite; }
+.blob-2 { width: 40vmax; height: 40vmax; right: 2%; top: 6%;   background: radial-gradient(circle at 50% 50%, var(--phase-b), transparent 68%); animation: drift-2 33s ease-in-out infinite; }
+.blob-3 { width: 52vmax; height: 52vmax; left: 22%; top: 42%;  background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--phase-b) 70%, #7C6BF5), transparent 70%); animation: drift-3 41s ease-in-out infinite; }
+.blob-4 { width: 34vmax; height: 34vmax; right: 12%; bottom: 2%; background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--phase-a) 60%, #FF5FA2), transparent 68%); animation: drift-4 36s ease-in-out infinite; }
+
+@keyframes drift-1 { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(9vmax, 7vmax, 0) scale(1.14); } }
+@keyframes drift-2 { 0%,100% { transform: translate3d(0,0,0) scale(1.08); } 50% { transform: translate3d(-11vmax, 10vmax, 0) scale(.9); } }
+@keyframes drift-3 { 0%,100% { transform: translate3d(0,0,0) scale(.95); } 50% { transform: translate3d(7vmax, -12vmax, 0) scale(1.16); } }
+@keyframes drift-4 { 0%,100% { transform: translate3d(0,0,0) scale(1.1); } 50% { transform: translate3d(-8vmax, -6vmax, 0) scale(.92); } }
+
+/* A faint grain layer keeps large gradient areas from banding. */
+.grain {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .32; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   GLASS SYSTEM
+   Four layers, all of which work in Safari:
+     1. frost      backdrop-filter blur + saturate + brightness
+     2. rim light  animated conic gradient masked to a 1px border
+     3. sheen      off-axis specular highlight
+     4. depth      inset highlight + drop shadow
+   SVG displacement refraction is layered on top only where the
+   browser actually supports it (see .liquid / the JS probe).
+   ============================================================ */
+.glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  backdrop-filter: blur(24px) saturate(180%) brightness(1.06);
+  -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.06);
+  border-radius: var(--r-lg);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 -1px 0 var(--glass-hi-2),
+    var(--glass-shadow);
+}
+
+/* Rim light — masked conic border that slowly rotates. */
+.glass::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--rim),
+    transparent 0deg,
+    color-mix(in oklab, var(--phase-a) 55%, white) 55deg,
+    transparent 130deg,
+    rgb(255 255 255 / .55) 215deg,
+    transparent 300deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: .75;
+  animation: rim-travel 14s linear infinite;
+}
+@keyframes rim-travel { to { --rim: 360deg; } }
+
+/* Specular sheen. */
+.glass::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; pointer-events: none;
+  background: linear-gradient(142deg,
+    rgb(255 255 255 / var(--sheen)) 0%,
+    transparent 38%,
+    transparent 64%,
+    rgb(255 255 255 / calc(var(--sheen) * .4)) 100%);
+  mix-blend-mode: overlay;
+}
+
+.glass-strong { background: var(--glass-fill-2); }
+
+/* Chromium-only refraction, switched on by the JS probe. */
+html[data-refraction="on"] .liquid {
+  backdrop-filter: blur(18px) saturate(180%) brightness(1.06) url(#liquid-lens);
+}
+
+/* ============================================================
+   LAYOUT PRIMITIVES
+   ============================================================ */
+.wrap { width: min(100% - 2.5rem, var(--maxw)); margin-inline: auto; }
+section { padding: clamp(4.5rem, 11vh, 8.5rem) 0; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--mono);
+  font-size: .68rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: color-mix(in oklab, var(--phase-a) 80%, var(--fg));
+  padding: .4rem .8rem; border-radius: 999px;
+  background: color-mix(in oklab, var(--phase-a) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--phase-a) 26%, transparent);
+  margin-bottom: 1.25rem;
+}
+.eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--phase-a);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+
+h1 {
+  font-size: clamp(2.6rem, 7.2vw, 5rem);
+  line-height: 1.02; letter-spacing: -.035em; font-weight: 700;
+  text-wrap: balance;
+}
+h2 {
+  font-size: clamp(1.9rem, 4.2vw, 3rem);
+  line-height: 1.1; letter-spacing: -.03em; font-weight: 700;
+  text-wrap: balance; margin-bottom: .9rem;
+}
+h3 { font-size: 1.02rem; font-weight: 650; letter-spacing: -.01em; margin-bottom: .4rem; }
+
+.lead { color: var(--muted); font-size: clamp(1rem, 1.6vw, 1.16rem); max-width: 54ch; text-wrap: pretty; }
+
+.gradient-text {
+  background: linear-gradient(105deg, var(--phase-a), var(--phase-b));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
+  font: inherit; font-weight: 600; font-size: .95rem;
+  padding: .85rem 1.5rem; border-radius: 999px; border: 0;
+  cursor: pointer; color: var(--fg); text-decoration: none;
+  transition: transform .3s var(--ease-spring), box-shadow .3s var(--ease-out), filter .3s var(--ease-out);
+}
+.btn:hover  { transform: translateY(-2px); }
+.btn:active { transform: translateY(0) scale(.975); }
+
+.btn-primary {
+  background: linear-gradient(120deg, var(--phase-a), var(--phase-b));
+  color: #0A0A10;
+  box-shadow: 0 6px 22px color-mix(in oklab, var(--phase-a) 38%, transparent),
+              inset 0 1px 0 rgb(255 255 255 / .45);
+}
+.btn-primary:hover { filter: brightness(1.06); box-shadow: 0 10px 30px color-mix(in oklab, var(--phase-a) 46%, transparent), inset 0 1px 0 rgb(255 255 255 / .45); }
+
+.btn-glass {
+  background: var(--glass-fill-2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--hairline);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+}
+.btn-glass:hover { background: color-mix(in oklab, var(--glass-fill-2) 70%, var(--phase-a) 12%); }
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.nav-shell { position: fixed; top: 0; left: 0; right: 0; z-index: 60; padding: 1.1rem 1.25rem; display: flex; justify-content: center; transition: padding .4s var(--ease-out); }
+.nav-shell[data-scrolled="true"] { padding-top: .65rem; }
+
+nav {
+  display: flex; align-items: center; gap: 1.6rem;
+  padding: .55rem .55rem .55rem 1.15rem;
+  border-radius: 999px;
+  width: min(100%, 780px);
+  transition: box-shadow .4s var(--ease-out), background .4s var(--ease-out);
+}
+.nav-shell[data-scrolled="true"] nav { background: var(--glass-fill-2); }
+
+.brand { display: flex; align-items: center; gap: .55rem; font-weight: 680; letter-spacing: -.02em; font-size: 1rem; text-decoration: none; color: var(--fg); }
+.nav-links { display: flex; gap: 1.4rem; margin-left: auto; }
+.nav-links a {
+  color: var(--muted); text-decoration: none; font-size: .875rem; font-weight: 500;
+  transition: color .25s var(--ease-out);
+}
+.nav-links a:hover { color: var(--fg); }
+nav .btn { padding: .55rem 1.1rem; font-size: .85rem; }
+
+@media (max-width: 720px) { .nav-links { display: none; } }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+#hero { padding-top: clamp(7rem, 16vh, 10rem); padding-bottom: clamp(3rem, 8vh, 6rem); }
+.hero-grid {
+  display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+}
+@media (max-width: 940px) { .hero-grid { grid-template-columns: 1fr; } }
+
+.hero-cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+.hero-note { margin-top: 1.15rem; color: var(--faint); font-size: .82rem; display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.hero-note b { color: var(--muted); font-weight: 600; }
+
+/* --- The live timer demo (the centrepiece) --- */
+.timer-card {
+  padding: clamp(1.6rem, 3.5vw, 2.4rem);
+  border-radius: var(--r-xl);
+  display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+}
+
+.phase-pill {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--mono);
+  font-size: .68rem; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
+  padding: .38rem .85rem; border-radius: 999px;
+  color: color-mix(in oklab, var(--phase-a) 78%, var(--fg));
+  background: color-mix(in oklab, var(--phase-a) 14%, transparent);
+  border: 1px solid color-mix(in oklab, var(--phase-a) 30%, transparent);
+  transition: color .8s var(--ease-out), background .8s var(--ease-out), border-color .8s var(--ease-out);
+}
+
+.ring-wrap { position: relative; width: min(272px, 62vw); aspect-ratio: 1; display: grid; place-items: center; }
+.ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.ring-track { fill: none; stroke: var(--hairline); stroke-width: 7; }
+.ring-prog {
+  fill: none; stroke: url(#ring-gradient); stroke-width: 7; stroke-linecap: round;
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--phase-a) 55%, transparent));
+}
+.ring-wrap[data-pulse="true"] .ring-prog { animation: ring-pulse .7s var(--ease-spring); }
+@keyframes ring-pulse {
+  0%   { stroke-width: 7;  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--phase-a) 55%, transparent)); }
+  38%  { stroke-width: 12; filter: drop-shadow(0 0 26px color-mix(in oklab, var(--phase-a) 85%, transparent)); }
+  100% { stroke-width: 7;  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--phase-a) 55%, transparent)); }
+}
+
+.readout { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+.clock {
+  font-family: var(--mono);
+  font-size: clamp(2.5rem, 6.6vw, 3.5rem);
+  font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+  display: flex; line-height: 1;
+}
+.session-label { font-size: .8rem; color: var(--faint); letter-spacing: .01em; }
+
+/* Rolling digits — the web analogue of .contentTransition(.numericText()) */
+.dcell { position: relative; display: inline-block; width: .62em; height: 1em; overflow: hidden; }
+.dcell.sep { width: .38em; }
+.dchar { position: absolute; inset: 0; display: grid; place-items: center; }
+.dchar.enter { animation: d-in .42s var(--ease-spring) both; }
+.dchar.exit  { animation: d-out .42s var(--ease-spring) both; }
+@keyframes d-in  { from { transform: translateY(-105%); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes d-out { from { transform: none; opacity: 1 } to { transform: translateY(105%); opacity: 0 } }
+
+/* Controls — the morph target */
+.controls { display: grid; place-items: center; min-height: 56px; }
+#ctrl-idle, #ctrl-run { view-transition-name: ctrl-morph; }
+
+.btn-start {
+  padding: .95rem 2.2rem; font-size: 1rem;
+  background: linear-gradient(120deg, var(--phase-a), var(--phase-b));
+  color: #0A0A10;
+  box-shadow: 0 6px 24px color-mix(in oklab, var(--phase-a) 40%, transparent),
+              inset 0 1px 0 rgb(255 255 255 / .45);
+}
+
+.cluster { display: flex; gap: .7rem; }
+.cbtn {
+  width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--hairline);
+  display: grid; place-items: center; cursor: pointer; color: var(--fg);
+  background: var(--glass-fill-2);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 4px 16px rgb(0 0 0 / .22);
+  transition: transform .3s var(--ease-spring), background .25s var(--ease-out);
+}
+.cbtn:hover  { transform: translateY(-3px); background: color-mix(in oklab, var(--glass-fill-2) 66%, var(--phase-a) 16%); }
+.cbtn:active { transform: scale(.94); }
+.cbtn.primary { background: linear-gradient(120deg, var(--phase-a), var(--phase-b)); color: #0A0A10; border-color: transparent; }
+.cbtn svg { width: 20px; height: 20px; }
+
+.demo-speed {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--faint);
+}
+.speed-toggle {
+  font: inherit; cursor: pointer; color: var(--muted);
+  padding: .28rem .6rem; border-radius: 999px;
+  border: 1px solid var(--hairline); background: transparent;
+  transition: all .25s var(--ease-out);
+}
+.speed-toggle[aria-pressed="true"] {
+  color: color-mix(in oklab, var(--phase-a) 82%, var(--fg));
+  border-color: color-mix(in oklab, var(--phase-a) 40%, transparent);
+  background: color-mix(in oklab, var(--phase-a) 12%, transparent);
+}
+
+/* ============================================================
+   MENU BAR SECTION
+   ============================================================ */
+.bar-stage { position: relative; margin-top: 3rem; }
+
+.macbar {
+  display: flex; align-items: center; gap: 1.15rem;
+  padding: .38rem 1rem; border-radius: 14px;
+  font-size: .78rem; font-weight: 500;
+  background: var(--glass-fill-2);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--hairline);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 6px 24px rgb(0 0 0 / .22);
+}
+.macbar .app-name { font-weight: 700; }
+.macbar .menus { display: flex; gap: 1.05rem; color: var(--muted); }
+.macbar .right { margin-left: auto; display: flex; align-items: center; gap: .95rem; color: var(--muted); }
+@media (max-width: 700px) { .macbar .menus { display: none; } }
+
+/* The status item — the thing the whole app is designed around */
+.status-item {
+  display: flex; align-items: center; gap: .42rem;
+  padding: .18rem .5rem; border-radius: 7px;
+  color: var(--fg);
+  background: color-mix(in oklab, var(--phase-a) 15%, transparent);
+  outline: 1px solid color-mix(in oklab, var(--phase-a) 26%, transparent);
+  transition: background .8s var(--ease-out), outline-color .8s var(--ease-out);
+}
+.status-item .mini-ring { width: 15px; height: 15px; transform: rotate(-90deg); overflow: visible; }
+.status-item .mini-track { fill: none; stroke: var(--hairline); stroke-width: 2.6; }
+.status-item .mini-prog  { fill: none; stroke: var(--phase-a); stroke-width: 2.6; stroke-linecap: round; }
+.status-item .t { font-family: var(--mono); font-size: .74rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* The dropdown panel, revealed on scroll */
+.mb-panel {
+  width: min(320px, 86vw);
+  margin-left: auto; margin-right: clamp(0px, 6vw, 74px);
+  margin-top: .6rem;
+  padding: 1.15rem;
+  border-radius: var(--r-lg);
+  transform-origin: top right;
+}
+.mb-panel-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.mb-panel .big {
+  font-family: var(--mono); font-size: 2.05rem; font-weight: 600;
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.mb-panel .sub { font-size: .78rem; color: var(--faint); }
+.mb-panel hr { border: 0; border-top: 1px solid var(--hairline); margin: .95rem 0; }
+.mb-mini-controls { display: flex; gap: .45rem; }
+.mb-mini-controls .cbtn { width: 40px; height: 40px; }
+.mb-mini-controls .cbtn svg { width: 15px; height: 15px; }
+.mb-stat { display: flex; justify-content: space-between; font-size: .8rem; }
+.mb-stat + .mb-stat { margin-top: .45rem; }
+.mb-stat span:first-child { color: var(--muted); }
+.mb-stat span:last-child  { font-family: var(--mono); font-weight: 600; }
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.feature-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 1rem; margin-top: 3rem;
+}
+.fcard { padding: 1.6rem; border-radius: var(--r-md); transition: transform .45s var(--ease-spring); }
+.fcard:hover { transform: translateY(-5px); }
+.fcard .icon {
+  width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
+  background: color-mix(in oklab, var(--phase-a) 16%, transparent);
+  color: color-mix(in oklab, var(--phase-a) 85%, var(--fg));
+  margin-bottom: 1rem;
+}
+.fcard .icon svg { width: 19px; height: 19px; }
+.fcard p { color: var(--muted); font-size: .89rem; line-height: 1.62; }
+
+/* ============================================================
+   RHYTHM
+   ============================================================ */
+.rhythm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+@media (max-width: 860px) { .rhythm-grid { grid-template-columns: 1fr; } }
+
+.cycle-wrap { position: relative; aspect-ratio: 1; width: min(370px, 78vw); margin-inline: auto; display: grid; place-items: center; }
+.cycle { position: absolute; inset: 0; transform: rotate(-90deg); overflow: visible; }
+/* Butt caps, not round: round caps of a 13px stroke eat ~3 units of the
+   130-unit ring at each end, which swallows the gaps between segments. */
+.cycle circle { fill: none; stroke-width: 13; stroke-linecap: butt; }
+.seg-focus { stroke: var(--phase-a); }
+.seg-short { stroke: #4DE1C1; }
+.seg-long  { stroke: #A78BFA; }
+.cycle circle { animation: seg-draw 1s var(--ease-out) both; animation-timeline: view(); animation-range: entry 12% cover 42%; }
+@keyframes seg-draw { from { opacity: 0; stroke-width: 3; } to { opacity: 1; stroke-width: 13; } }
+
+.cycle-center { text-align: center; }
+.cycle-center .n { font-family: var(--mono); font-size: 2.4rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+.cycle-center .l { font-size: .74rem; color: var(--faint); letter-spacing: .09em; text-transform: uppercase; margin-top: .3rem; }
+
+.legend { display: flex; flex-direction: column; gap: .85rem; margin-top: 1.8rem; }
+.legend-row { display: flex; align-items: center; gap: .8rem; font-size: .9rem; }
+.legend-row .sw { width: 26px; height: 5px; border-radius: 999px; flex: none; }
+.legend-row .lbl { font-weight: 600; }
+.legend-row .val { margin-left: auto; font-family: var(--mono); font-size: .82rem; color: var(--muted); }
+
+/* ============================================================
+   STATS
+   ============================================================ */
+.stats-window { padding: 1.6rem; border-radius: var(--r-xl); max-width: 560px; margin-top: 3rem; }
+.sw-title { display: flex; align-items: center; gap: .55rem; margin-bottom: 1.4rem; }
+.sw-dots { display: flex; gap: 6px; }
+.sw-dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.sw-dots i:nth-child(1) { background: #FF5F57 } .sw-dots i:nth-child(2) { background: #FEBC2E } .sw-dots i:nth-child(3) { background: #28C840 }
+.sw-heading { font-size: .82rem; color: var(--muted); margin-left: .4rem; }
+
+.chart { display: flex; align-items: flex-end; gap: clamp(.4rem, 2vw, .9rem); height: 168px; }
+.chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .55rem; height: 100%; justify-content: flex-end; }
+.chart .bar {
+  width: 100%; border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, var(--phase-a), var(--phase-b));
+  height: var(--h);
+  transform-origin: bottom;
+  animation: bar-grow .9s var(--ease-spring) both;
+  animation-timeline: view(); animation-range: entry 8% cover 38%;
+}
+@keyframes bar-grow { from { transform: scaleY(0); opacity: .2 } to { transform: scaleY(1); opacity: 1 } }
+.chart .day { font-family: var(--mono); font-size: .66rem; color: var(--faint); }
+.sw-foot { display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--hairline); }
+.sw-foot div .k { font-family: var(--mono); font-size: 1.35rem; font-weight: 700; letter-spacing: -.02em; }
+.sw-foot div .v { font-size: .72rem; color: var(--faint); letter-spacing: .06em; text-transform: uppercase; }
+
+/* ============================================================
+   DOWNLOAD + FOOTER
+   ============================================================ */
+.download-card { padding: clamp(2.4rem, 6vw, 4rem); border-radius: var(--r-xl); text-align: center; }
+.download-card .lead { margin-inline: auto; }
+.download-cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+.req { margin-top: 1.4rem; font-size: .78rem; color: var(--faint); font-family: var(--mono); }
+
+footer { padding: 3rem 0 4rem; border-top: 1px solid var(--hairline); }
+.foot-row { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
+.foot-row .brand { margin-right: auto; }
+footer a { color: var(--muted); text-decoration: none; font-size: .86rem; transition: color .25s var(--ease-out); }
+footer a:hover { color: var(--fg); }
+.foot-note { margin-top: 1.6rem; font-size: .78rem; color: var(--faint); }
+
+/* ============================================================
+   SCROLL-DRIVEN REVEALS
+   Baseline in Safari 26 and Chromium; browsers without support get
+   the content immediately via the @supports fallback below.
+   ============================================================ */
+.reveal {
+  animation: reveal-in .8s var(--ease-out) both;
+  animation-timeline: view();
+  animation-range: entry 4% cover 30%;
+}
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(30px) scale(.985); filter: blur(6px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+.mb-panel.reveal {
+  animation: panel-drop 1s var(--ease-spring) both;
+  animation-timeline: view();
+  animation-range: entry 10% cover 40%;
+}
+@keyframes panel-drop {
+  from { opacity: 0; transform: translateY(-16px) scale(.9); filter: blur(10px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+@supports not (animation-timeline: view()) {
+  .reveal, .mb-panel.reveal, .chart .bar, .cycle circle { animation: none; opacity: 1; transform: none; filter: none; }
+  .chart .bar { height: var(--h); }
+}
+
+/* ============================================================
+   VIEW TRANSITIONS — the capsule → cluster morph
+   The web analogue of SwiftUI's glassEffectID. Suppressing the root
+   transition keeps it a targeted morph instead of a page crossfade.
+   ============================================================ */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-group(ctrl-morph) {
+  animation-duration: .58s;
+  animation-timing-function: var(--ease-spring);
+}
+::view-transition-old(ctrl-morph), ::view-transition-new(ctrl-morph) {
+  height: 100%; width: 100%; object-fit: contain;
+  animation-duration: .34s; animation-timing-function: var(--ease-out);
+}
+
+/* ============================================================
+   REDUCED MOTION
+   Everything decorative stops; state changes still happen, instantly.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .blob, .glass::before, .eyebrow .dot { animation: none !important; }
+  .reveal, .mb-panel.reveal, .chart .bar, .cycle circle { animation: none !important; opacity: 1; transform: none; filter: none; }
+  .dchar.enter, .dchar.exit { animation-duration: .01ms !important; }
+  .ring-wrap[data-pulse="true"] .ring-prog { animation: none !important; }
+  .btn:hover, .fcard:hover, .cbtn:hover { transform: none; }
+  ::view-transition-group(ctrl-morph),
+  ::view-transition-old(ctrl-morph),
+  ::view-transition-new(ctrl-morph) { animation-duration: .01ms !important; }
+  * { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body data-phase="focus">
+
+<!-- SVG filter definitions. The lens filter is applied only where the
+     browser genuinely supports SVG filters as backdrop-filter input. -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <filter id="liquid-lens" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="7" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="1.4" result="soft"/>
+      <feDisplacementMap in="SourceGraphic" in2="soft" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Stop colours are set from CSS, not presentation attributes:
+         var() is not resolved inside a presentation attribute. -->
+    <linearGradient id="ring-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop class="stop-a" offset="0%"/>
+      <stop class="stop-b" offset="100%"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="mesh" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ====================== NAV ====================== -->
+<div class="nav-shell" id="navShell">
+  <nav class="glass liquid">
+    <a class="brand" href="#hero">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="url(#ring-gradient)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="42 14" transform="rotate(-90 12 12)"/>
+        <circle cx="12" cy="12" r="3" fill="url(#ring-gradient)"/>
+      </svg>
+      Cadence
+    </a>
+    <div class="nav-links">
+      <a href="#menubar">Menu bar</a>
+      <a href="#features">Features</a>
+      <a href="#rhythm">Rhythm</a>
+      <a href="#stats">Stats</a>
+    </div>
+    <a class="btn btn-primary" href="#download">Download</a>
+  </nav>
+</div>
+
+<main>
+  <!-- ====================== HERO ====================== -->
+  <section id="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow"><span class="dot"></span>Native · macOS 26</span>
+        <h1>Focus has a rhythm.<br><span class="gradient-text">Find yours.</span></h1>
+        <p class="lead" style="margin-top:1.4rem">
+          Cadence is a Pomodoro timer that lives in your menu bar. Deadline-accurate,
+          built on Liquid Glass, and quiet enough to forget about until it matters.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#download">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            Download for Mac
+          </a>
+          <a class="btn btn-glass" href="#menubar">See how it works</a>
+        </div>
+        <p class="hero-note"><b>Free</b> · <b>No account</b> · <b>No ads</b> · <b>No telemetry</b></p>
+      </div>
+
+      <!-- Live demo. This actually runs — it is the same state machine
+           the app uses, at a smaller scale. -->
+      <div class="timer-card glass glass-strong liquid reveal" id="timerCard">
+        <span class="phase-pill" id="phasePill">Focus</span>
+
+        <div class="ring-wrap" id="ringWrap">
+          <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="ring-track" cx="100" cy="100" r="88"/>
+            <circle class="ring-prog" id="ringProg" cx="100" cy="100" r="88"
+                    pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+          </svg>
+          <div class="readout">
+            <div class="clock mono" id="clock" role="timer" aria-live="off" aria-label="Time remaining"></div>
+            <div class="session-label" id="sessionLabel">Ready when you are</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn btn-start" id="ctrl-idle">Start focus</button>
+        </div>
+
+        <div class="demo-speed">
+          <span>Demo</span>
+          <button class="speed-toggle mono" id="speedToggle" aria-pressed="false">1&times;</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== MENU BAR ====================== -->
+  <section id="menubar">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span>Menu bar first</span>
+        <h2>It lives up here.</h2>
+        <p class="lead">
+          A ring that fills as you work and a countdown you can read without stopping.
+          One click opens the full panel — no window to hunt for, no flow to break.
+        </p>
+      </div>
+
+      <div class="bar-stage">
+        <div class="macbar reveal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.25 2.74 2.2 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.87.69 1.18-.02 1.93-1.08 2.65-2.14.83-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.32-3.5zM14.9 5.6c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.7-.92 2.7.97.08 1.97-.5 2.58-1.23z"/></svg>
+          <span class="app-name">Cadence</span>
+          <div class="menus"><span>File</span><span>Session</span><span>View</span><span>Window</span><span>Help</span></div>
+          <div class="right">
+            <div class="status-item" id="statusItem" title="Cadence — focus session in progress">
+              <svg class="mini-ring" viewBox="0 0 20 20" aria-hidden="true">
+                <circle class="mini-track" cx="10" cy="10" r="8"/>
+                <circle class="mini-prog" id="miniProg" cx="10" cy="10" r="8" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+              </svg>
+              <span class="t mono" id="statusTime">25:00</span>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5a10 10 0 0 1 14 0M8 16a5.5 5.5 0 0 1 8 0"/><circle cx="12" cy="19.5" r=".6" fill="currentColor"/></svg>
+            <svg width="22" height="15" viewBox="0 0 28 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="1" y="3" width="22" height="10" rx="3"/><rect x="3" y="5" width="14" height="6" rx="1.5" fill="currentColor" stroke="none"/><path d="M25 6.5v3" stroke-linecap="round"/></svg>
+            <span class="mono" style="font-size:.74rem">9:41</span>
+          </div>
+        </div>
+
+        <div class="mb-panel glass glass-strong liquid reveal">
+          <div class="mb-panel-row">
+            <div>
+              <div class="big mono" id="panelTime">24:31</div>
+              <div class="sub" id="panelSub">Focus · Writing the release notes</div>
+            </div>
+            <div class="mb-mini-controls">
+              <button class="cbtn" aria-label="Pause"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="3.6" height="14" rx="1.4"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.4"/></svg></button>
+              <button class="cbtn primary" aria-label="Skip to break"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5.5v13a1 1 0 0 0 1.54.84l9.2-6.5a1 1 0 0 0 0-1.68l-9.2-6.5A1 1 0 0 0 6 5.5z"/><rect x="18" y="5" width="2.6" height="14" rx="1.3"/></svg></button>
+            </div>
+          </div>
+          <hr>
+          <div class="mb-stat"><span>Today</span><span>5 sessions · 2h 05m</span></div>
+          <div class="mb-stat"><span>This week</span><span>23 sessions · 9h 35m</span></div>
+          <div class="mb-stat"><span>Cycle</span><span>3 of 4</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== FEATURES ====================== -->
+  <section id="features">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span>What's inside</span>
+        <h2>Small app. No compromises.</h2>
+        <p class="lead">Everything a focus timer needs, and deliberately nothing else.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+          <h3>Deadline-accurate</h3>
+          <p>The timer stores an end time, not a tick count. Close the lid, come back, and it is exactly where it should be — no drift, no lost minutes.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>
+          <h3>Name your sessions</h3>
+          <p>Label what you are working on before you start. Every finished block is logged with its name, so the history reads like a diary instead of a tally.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2M21 12a9 9 0 0 1-15.5 6.2"/><path d="M18 3v3.5h-3.5M6 21v-3.5h3.5"/></svg></div>
+          <h3>Recurring breaks</h3>
+          <p>Short breaks between focus blocks, a long one after every fourth. Every duration and the cycle length are yours to tune.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+          <h3>Stats that stack up</h3>
+          <p>Totals by day, week, month and year, charted natively. Proof of the weeks you actually showed up.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+          <h3>Native notifications</h3>
+          <p>A gentle chime and a system notification when a phase ends. Start the break, skip it, or add five minutes without leaving the alert.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M3 10h18"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg></div>
+          <h3>Liquid Glass, properly</h3>
+          <p>Built on the macOS 26 design system — real translucency, real depth, and morphing controls that respect Reduce Motion and Reduce Transparency.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg></div>
+          <h3>Speaks your language</h3>
+          <p>English and Português, switched automatically with your system language. No settings screen required.</p>
+        </div>
+        <div class="fcard glass liquid reveal">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+          <h3>Yours, entirely</h3>
+          <p>No account, no sync service, no analytics. Your sessions are a plain file on your Mac and they never leave it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== RHYTHM ====================== -->
+  <section id="rhythm">
+    <div class="wrap rhythm-grid">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span>The cycle</span>
+        <h2>Focus. Break.<br>Repeat.</h2>
+        <p class="lead">
+          Four focus blocks, three short breaks, one long one at the end. That is a cycle —
+          two hours and ten minutes of structured work. Cadence keeps count so you don't have to.
+        </p>
+        <div class="legend">
+          <div class="legend-row"><span class="sw" style="background:var(--phase-a)"></span><span class="lbl">Focus</span><span class="val">25 min &times; 4</span></div>
+          <div class="legend-row"><span class="sw" style="background:#4DE1C1"></span><span class="lbl">Short break</span><span class="val">5 min &times; 3</span></div>
+          <div class="legend-row"><span class="sw" style="background:#A78BFA"></span><span class="lbl">Long break</span><span class="val">15 min &times; 1</span></div>
+        </div>
+      </div>
+
+      <!-- Segment lengths are proportional to real minutes: the ring is
+           130 units long, matching the 130-minute cycle. -->
+      <div class="cycle-wrap">
+        <svg class="cycle" viewBox="0 0 200 200" aria-label="A cycle: four 25-minute focus blocks separated by three 5-minute breaks, ending with a 15-minute long break">
+          <circle class="seg-focus" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="22.5 130" stroke-dashoffset="0"    style="animation-delay:.00s"/>
+          <circle class="seg-short" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="2.5 130"  stroke-dashoffset="-25"  style="animation-delay:.07s"/>
+          <circle class="seg-focus" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="22.5 130" stroke-dashoffset="-30"  style="animation-delay:.14s"/>
+          <circle class="seg-short" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="2.5 130"  stroke-dashoffset="-55"  style="animation-delay:.21s"/>
+          <circle class="seg-focus" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="22.5 130" stroke-dashoffset="-60"  style="animation-delay:.28s"/>
+          <circle class="seg-short" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="2.5 130"  stroke-dashoffset="-85"  style="animation-delay:.35s"/>
+          <circle class="seg-focus" cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="22.5 130" stroke-dashoffset="-90"  style="animation-delay:.42s"/>
+          <circle class="seg-long"  cx="100" cy="100" r="86" pathLength="130" stroke-dasharray="12.5 130" stroke-dashoffset="-115" style="animation-delay:.49s"/>
+        </svg>
+        <div class="cycle-center">
+          <div class="n mono">2:10</div>
+          <div class="l">per cycle</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== STATS ====================== -->
+  <section id="stats">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span>History</span>
+        <h2>Proof you showed up.</h2>
+        <p class="lead">Every finished session is written to a plain file on your Mac. Cadence reads it back as day, week, month and year totals.</p>
+      </div>
+
+      <div class="stats-window glass glass-strong liquid reveal">
+        <div class="sw-title">
+          <div class="sw-dots"><i></i><i></i><i></i></div>
+          <span class="sw-heading mono">Cadence — Statistics</span>
+        </div>
+        <div class="chart">
+          <div class="col"><div class="bar" style="--h:44%;  animation-delay:.00s"></div><span class="day">MON</span></div>
+          <div class="col"><div class="bar" style="--h:72%;  animation-delay:.05s"></div><span class="day">TUE</span></div>
+          <div class="col"><div class="bar" style="--h:58%;  animation-delay:.10s"></div><span class="day">WED</span></div>
+          <div class="col"><div class="bar" style="--h:96%;  animation-delay:.15s"></div><span class="day">THU</span></div>
+          <div class="col"><div class="bar" style="--h:81%;  animation-delay:.20s"></div><span class="day">FRI</span></div>
+          <div class="col"><div class="bar" style="--h:26%;  animation-delay:.25s"></div><span class="day">SAT</span></div>
+          <div class="col"><div class="bar" style="--h:12%;  animation-delay:.30s"></div><span class="day">SUN</span></div>
+        </div>
+        <div class="sw-foot">
+          <div><div class="k mono">23</div><div class="v">Sessions</div></div>
+          <div><div class="k mono">9h 35m</div><div class="v">Focused</div></div>
+          <div><div class="k mono">6</div><div class="v">Day streak</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== DOWNLOAD ====================== -->
+  <section id="download">
+    <div class="wrap">
+      <div class="download-card glass glass-strong liquid reveal">
+        <h2>Get Cadence</h2>
+        <p class="lead">Free and open source. Build it yourself, or grab the notarized release when it ships.</p>
+        <div class="download-cta">
+          <a class="btn btn-primary" href="#download">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.25 2.74 2.2 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.87.69 1.18-.02 1.93-1.08 2.65-2.14.83-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.32-3.5zM14.9 5.6c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.7-.92 2.7.97.08 1.97-.5 2.58-1.23z"/></svg>
+            Download for Mac
+          </a>
+          <a class="btn btn-glass" href="https://github.com/mpgxc/ai-gens/tree/main/cadence">View source</a>
+        </div>
+        <p class="req">Requires macOS 26 Tahoe or later · Apple silicon &amp; Intel</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="#hero">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="url(#ring-gradient)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="42 14" transform="rotate(-90 12 12)"/>
+          <circle cx="12" cy="12" r="3" fill="url(#ring-gradient)"/>
+        </svg>
+        Cadence
+      </a>
+      <a href="#menubar">Menu bar</a>
+      <a href="#features">Features</a>
+      <a href="#rhythm">Rhythm</a>
+      <a href="#stats">Stats</a>
+      <a href="https://github.com/mpgxc/ai-gens">GitHub</a>
+    </div>
+    <p class="foot-note">A focus timer for macOS. Built in the open.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ----------------------------------------------------------
+     Refraction probe.
+     Safari and Firefox accept `backdrop-filter: url(...)` at parse
+     time but silently drop the SVG part, so CSS.supports() lies.
+     Chromium is the only engine that actually renders it today, so
+     gate on a real capability we can detect instead of a UA string.
+     ---------------------------------------------------------- */
+  // `window.chrome` is absent in both WebKit and Gecko, which are exactly the
+  // two engines that drop the filter, so it separates them cleanly.
+  const canRefract = !!window.chrome && CSS.supports('backdrop-filter', 'url(#liquid-lens)');
+  if (canRefract && !reduceMotion.matches) {
+    document.documentElement.dataset.refraction = 'on';
+  }
+
+  /* ----------------------------------------------------------
+     Nav — collapse into a solid glass pill once scrolled.
+     ---------------------------------------------------------- */
+  const navShell = document.getElementById('navShell');
+  const onScroll = () => { navShell.dataset.scrolled = String(scrollY > 24); };
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ----------------------------------------------------------
+     Rolling digits.
+     Only cells whose character actually changed animate, which keeps
+     the minutes still while the seconds roll.
+     ---------------------------------------------------------- */
+  function renderDigits(host, text) {
+    const chars = [...text];
+    while (host.children.length > chars.length) host.lastChild.remove();
+    while (host.children.length < chars.length) {
+      const cell = document.createElement('span');
+      cell.className = 'dcell';
+      cell.appendChild(Object.assign(document.createElement('span'), { className: 'dchar' }));
+      host.appendChild(cell);
+    }
+    chars.forEach((ch, i) => {
+      const cell = host.children[i];
+      cell.classList.toggle('sep', ch === ':');
+      const current = cell.querySelector('.dchar:not(.exit)');
+      if (current && current.textContent === ch) return;
+      if (current) {
+        current.classList.add('exit');
+        current.addEventListener('animationend', () => current.remove(), { once: true });
+        // Guard against the animationend never firing (tab hidden, reduced motion).
+        setTimeout(() => current.remove(), 600);
+      }
+      const next = document.createElement('span');
+      next.className = 'dchar' + (current ? ' enter' : '');
+      next.textContent = ch;
+      cell.appendChild(next);
+    });
+  }
+
+  /* ----------------------------------------------------------
+     Timer engine.
+     Deliberately mirrors the Swift app: an absolute deadline plus a
+     paused remainder, with everything else derived. No accumulator,
+     so backgrounding the tab can never desynchronise it.
+     ---------------------------------------------------------- */
+  const PHASES = {
+    focus:      { label: 'Focus',       seconds: 25 * 60 },
+    shortBreak: { label: 'Short break', seconds:  5 * 60 },
+    longBreak:  { label: 'Long break',  seconds: 15 * 60 },
+  };
+
+  const el = {
+    card:      document.getElementById('timerCard'),
+    pill:      document.getElementById('phasePill'),
+    clock:     document.getElementById('clock'),
+    label:     document.getElementById('sessionLabel'),
+    ring:      document.getElementById('ringProg'),
+    ringWrap:  document.getElementById('ringWrap'),
+    controls:  document.querySelector('.controls'),
+    speed:     document.getElementById('speedToggle'),
+    miniProg:  document.getElementById('miniProg'),
+    statusTime:document.getElementById('statusTime'),
+    statusItem:document.getElementById('statusItem'),
+    panelTime: document.getElementById('panelTime'),
+    panelSub:  document.getElementById('panelSub'),
+  };
+
+  const state = {
+    phase: 'focus',
+    running: false,
+    deadline: 0,          // ms epoch, only meaningful while running
+    remaining: PHASES.focus.seconds * 1000,
+    completedFocus: 0,
+    speed: 1,
+  };
+
+  const remainingMs = () =>
+    state.running ? Math.max(0, state.deadline - performance.now()) : state.remaining;
+
+  function totalMs() { return PHASES[state.phase].seconds * 1000 / state.speed; }
+
+  function fmt(ms) {
+    const s = Math.ceil(ms / 1000);
+    return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  /* Paint runs off rAF so the ring is genuinely smooth rather than
+     stepping once per second, while the digits only touch the DOM
+     when the rendered string changes. */
+  let lastText = '';
+  function paint() {
+    // Roll the phase over *before* deriving the display, otherwise this
+    // frame paints the expired phase's 00:00 and the ring blinks empty.
+    if (state.running && remainingMs() <= 0) advance();
+
+    const left = remainingMs();
+    const progress = 1 - left / totalMs();
+
+    el.ring.setAttribute('stroke-dashoffset', String(1 - Math.min(1, Math.max(0, progress))));
+    el.miniProg.setAttribute('stroke-dashoffset', String(1 - Math.min(1, Math.max(0, progress))));
+
+    const text = fmt(left);
+    if (text !== lastText) {
+      lastText = text;
+      renderDigits(el.clock, text);
+      // The menu bar mock reads from the same clock, so the whole page
+      // stays in agreement instead of showing a frozen marketing time.
+      el.statusTime.textContent = text;
+      el.panelTime.textContent = text;
+    }
+
+    requestAnimationFrame(paint);
+  }
+
+  function setPhase(phase) {
+    state.phase = phase;
+    document.body.dataset.phase = phase;
+    el.pill.textContent = PHASES[phase].label;
+    el.panelSub.textContent = phase === 'focus'
+      ? 'Focus · Writing the release notes'
+      : PHASES[phase].label + ' · Step away';
+    el.statusItem.title = `Cadence — ${PHASES[phase].label.toLowerCase()} in progress`;
+    state.remaining = totalMs();
+    lastText = '';
+  }
+
+  function advance() {
+    const finished = state.phase;
+    if (finished === 'focus') state.completedFocus += 1;
+
+    const next = finished === 'focus'
+      ? (state.completedFocus % 4 === 0 ? 'longBreak' : 'shortBreak')
+      : 'focus';
+
+    // Ring recoil on every phase boundary.
+    el.ringWrap.dataset.pulse = 'true';
+    setTimeout(() => { el.ringWrap.dataset.pulse = 'false'; }, 750);
+
+    setPhase(next);
+    el.label.textContent = next === 'focus' ? 'Back to it' : 'Step away for a moment';
+    state.deadline = performance.now() + totalMs();
+  }
+
+  /* ----------------------------------------------------------
+     The signature morph.
+     A View Transition with a shared view-transition-name is the web's
+     equivalent of glassEffectID: the single Start capsule and the
+     three-button cluster are different elements, and the browser
+     tweens the box between them.
+     ---------------------------------------------------------- */
+  const ICONS = {
+    pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.4"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.4"/></svg>',
+    play:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.2v13.6a1 1 0 0 0 1.53.85l10.6-6.8a1 1 0 0 0 0-1.7L8.53 4.35A1 1 0 0 0 7 5.2z"/></svg>',
+    skip:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13a1 1 0 0 0 1.54.84l9.2-6.5a1 1 0 0 0 0-1.68l-9.2-6.5A1 1 0 0 0 6 5.5z"/><rect x="18" y="5" width="2.6" height="14" rx="1.3"/></svg>',
+    stop:  '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="3"/></svg>',
+  };
+
+  function renderControls() {
+    if (!state.running && state.remaining === totalMs()) {
+      el.controls.innerHTML =
+        `<button class="btn btn-start" id="ctrl-idle">Start ${PHASES[state.phase].label.toLowerCase()}</button>`;
+    } else {
+      el.controls.innerHTML =
+        `<div class="cluster" id="ctrl-run">
+           <button class="cbtn primary" data-act="toggle" aria-label="${state.running ? 'Pause' : 'Resume'}">${state.running ? ICONS.pause : ICONS.play}</button>
+           <button class="cbtn" data-act="skip" aria-label="Skip phase">${ICONS.skip}</button>
+           <button class="cbtn" data-act="stop" aria-label="Stop session">${ICONS.stop}</button>
+         </div>`;
+    }
+  }
+
+  function morph(mutate) {
+    if (!document.startViewTransition || reduceMotion.matches) { mutate(); return; }
+    document.startViewTransition(mutate);
+  }
+
+  function start() {
+    state.running = true;
+    state.deadline = performance.now() + state.remaining;
+    el.label.textContent = 'Writing the release notes';
+    morph(renderControls);
+  }
+  function pause() {
+    state.remaining = remainingMs();
+    state.running = false;
+    el.label.textContent = 'Paused';
+    renderControls();
+  }
+  function resume() {
+    state.running = true;
+    state.deadline = performance.now() + state.remaining;
+    el.label.textContent = 'Writing the release notes';
+    renderControls();
+  }
+  function stop() {
+    state.running = false;
+    state.completedFocus = 0;
+    setPhase('focus');
+    el.label.textContent = 'Ready when you are';
+    morph(renderControls);
+  }
+
+  el.controls.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    if (btn.id === 'ctrl-idle') return start();
+    switch (btn.dataset.act) {
+      case 'toggle': return state.running ? pause() : resume();
+      case 'skip':   return advance();
+      case 'stop':   return stop();
+    }
+  });
+
+  /* Demo speed. The app runs in real minutes; this only exists so a
+     visitor can watch a whole focus→break transition in a few seconds. */
+  el.speed.addEventListener('click', () => {
+    const next = state.speed === 1 ? 60 : 1;
+    const fraction = remainingMs() / totalMs();   // preserve visual position
+    state.speed = next;
+    const left = fraction * totalMs();
+    if (state.running) state.deadline = performance.now() + left;
+    else state.remaining = left;
+    el.speed.textContent = next + '×';
+    el.speed.setAttribute('aria-pressed', String(next !== 1));
+    lastText = '';
+  });
+
+  setPhase('focus');
+  renderControls();
+  requestAnimationFrame(paint);
+})();
+</script>
+</body>
+</html>
