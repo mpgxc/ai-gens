@@ -1,370 +1,915 @@
 {
-  "sourceLanguage" : "en",
-  "version" : "1.0",
-  "strings" : {
-    "%@, %lld minutes remaining" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%1$@, %2$lld minutos restantes" } }
-      }
-    },
-    "%@, paused, %lld minutes remaining" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%1$@, pausado, %2$lld minutos restantes" } }
-      }
-    },
-    "%@ ready to start" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%@ pronto para começar" } }
-      }
-    },
-    "%lld minutes %lld seconds" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld minutos e %2$lld segundos" } }
-      }
-    },
-    "%lld seconds" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%lld segundos" } }
-      }
-    },
-    "%lld of %lld focus blocks" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "%1$lld de %2$lld blocos de foco" } }
-      }
-    },
-    "+5 minutes" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "+5 minutos" } }
-      }
-    },
-    "Add 5 Minutes" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Adicionar 5 minutos" } }
-      }
-    },
-    "Allow notifications" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Permitir notificações" } }
-      }
-    },
-    "Best day" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Melhor dia" } }
-      }
-    },
-    "Break's over — back to it." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausa encerrada — de volta ao trabalho." } }
-      }
-    },
-    "Cadence, ready" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Cadence, pronto" } }
-      }
-    },
-    "Cycle progress" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Progresso do ciclo" } }
-      }
-    },
-    "Day" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Dia" } }
-      }
-    },
-    "Delete" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Excluir" } }
-      }
-    },
-    "ends %@" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "termina %@" } }
-      }
-    },
-    "Export history…" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Exportar histórico…" } }
-      }
-    },
-    "Finished focus blocks and breaks show up here." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Blocos de foco e pausas concluídos aparecem aqui." } }
-      }
-    },
-    "Focus" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Foco" } }
-      }
-    },
-    "Focus block done. Time to step away." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Bloco de foco concluído. Hora de dar uma pausa." } }
-      }
-    },
-    "Focused" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Focado" } }
-      }
-    },
-    "General" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Geral" } }
-      }
-    },
-    "Granularity" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Granularidade" } }
-      }
-    },
-    "History" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Histórico" } }
-      }
-    },
-    "Keep the Mac awake during focus" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Manter o Mac acordado durante o foco" } }
-      }
-    },
-    "Launch at login" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Abrir ao iniciar a sessão" } }
-      }
-    },
-    "Long break" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausa longa" } }
-      }
-    },
-    "Long break every %lld focus blocks" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausa longa a cada %lld blocos de foco" } }
-      }
-    },
-    "Long break's over. Ready for another cycle?" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausa longa encerrada. Pronto para outro ciclo?" } }
-      }
-    },
-    "Menu Bar" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Barra de menus" } }
-      }
-    },
-    "Month" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Mês" } }
-      }
-    },
-    "No sessions yet" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Nenhuma sessão ainda" } }
-      }
-    },
-    "Open Cadence" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o Cadence" } }
-      }
-    },
-    "Pause" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausar" } }
-      }
-    },
-    "Phases are capped at 59 minutes so the menu bar countdown never changes width." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "As fases são limitadas a 59 minutos para que a contagem na barra de menus nunca mude de largura." } }
-      }
-    },
-    "Play a sound at phase changes" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Tocar um som nas trocas de fase" } }
-      }
-    },
-    "Quit Cadence" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Encerrar o Cadence" } }
-      }
-    },
-    "Resume" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Retomar" } }
-      }
-    },
-    "Ring and time" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Anel e tempo" } }
-      }
-    },
-    "Ring only" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Somente o anel" } }
-      }
-    },
-    "Session" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sessão" } }
-      }
-    },
-    "Sessions" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sessões" } }
-      }
-    },
-    "Sessions recorded" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sessões registradas" } }
-      }
-    },
-    "Settings…" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Ajustes…" } }
-      }
-    },
-    "Short break" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pausa curta" } }
-      }
-    },
-    "Show" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar" } }
-      }
-    },
-    "Skip" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pular" } }
-      }
-    },
-    "Skip Phase" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pular fase" } }
-      }
-    },
-    "Skip to next phase" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Pular para a próxima fase" } }
-      }
-    },
-    "Start" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar" } }
-      }
-    },
-    "Start %@" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar %@" } }
-      }
-    },
-    "Start breaks automatically" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar as pausas automaticamente" } }
-      }
-    },
-    "Start next" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar a próxima" } }
-      }
-    },
-    "Start the next focus block automatically" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar o próximo bloco de foco automaticamente" } }
-      }
-    },
-    "Stats" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Estatísticas" } }
-      }
-    },
-    "Stop session" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Encerrar a sessão" } }
-      }
-    },
-    "Stop Session" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Encerrar a sessão" } }
-      }
-    },
-    "stopped early" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "interrompida" } }
-      }
-    },
-    "Streak" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sequência" } }
-      }
-    },
-    "This ended while your Mac was asleep. Nothing was started for you." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Isso terminou enquanto o Mac estava dormindo. Nada foi iniciado automaticamente." } }
-      }
-    },
-    "This week" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Esta semana" } }
-      }
-    },
-    "Time only" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Somente o tempo" } }
-      }
-    },
-    "Time remaining" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Tempo restante" } }
-      }
-    },
-    "Timer" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Temporizador" } }
-      }
-    },
-    "Today" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Hoje" } }
-      }
-    },
-    "Use the phase colour" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Usar a cor da fase" } }
-      }
-    },
-    "View" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Visualização" } }
-      }
-    },
-    "Week" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Semana" } }
-      }
-    },
-    "What are you focusing on?" : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "No que você está focando?" } }
-      }
-    },
-    "Without permission, Cadence can still chime but cannot show phase-end alerts." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sem permissão, o Cadence ainda toca o som, mas não consegue mostrar alertas de fim de fase." } }
-      }
-    },
-    "Your %@ ended while the Mac was asleep." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sua %@ terminou enquanto o Mac estava dormindo." } }
-      }
-    },
-    "Your %@ ended while the Mac was asleep. Nothing was started for you." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Sua %@ terminou enquanto o Mac estava dormindo. Nada foi iniciado automaticamente." } }
-      }
-    },
-    "Your sessions are a plain JSON file in Application Support. Nothing is uploaded anywhere." : {
-      "localizations" : {
-        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Suas sessões são um arquivo JSON simples em Application Support. Nada é enviado para lugar nenhum." } }
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "%@ ready to start": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ pronto para começar"
+          }
+        }
+      }
+    },
+    "%@, %lld minutes remaining": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$lld minutos restantes"
+          }
+        }
+      }
+    },
+    "%@, paused, %lld minutes remaining": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, pausado, %2$lld minutos restantes"
+          }
+        }
+      }
+    },
+    "%lld minutes %lld seconds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld minutos e %2$lld segundos"
+          }
+        }
+      }
+    },
+    "%lld of %lld focus blocks": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld de %2$lld blocos de foco"
+          }
+        }
+      }
+    },
+    "%lld seconds": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld segundos"
+          }
+        }
+      }
+    },
+    "+5 minutes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+5 minutos"
+          }
+        }
+      }
+    },
+    "A volume change takes effect on the next focus block, so it never jumps mid-session.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mudar o volume vale a partir do próximo bloco de foco, então ele nunca salta no meio da sessão."
+          }
+        }
+      }
+    },
+    "Add 5 Minutes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar 5 minutos"
+          }
+        }
+      }
+    },
+    "Allow notifications": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir notificações"
+          }
+        }
+      }
+    },
+    "Best day": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melhor dia"
+          }
+        }
+      }
+    },
+    "Break's over — back to it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa encerrada — de volta ao trabalho."
+          }
+        }
+      }
+    },
+    "Cadence can't open %@. Choose it again in Settings.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Cadence não consegue abrir %@. Escolha novamente nos Ajustes."
+          }
+        }
+      }
+    },
+    "Cadence, ready": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cadence, pronto"
+          }
+        }
+      }
+    },
+    "Choose…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolher…"
+          }
+        }
+      }
+    },
+    "Cycle progress": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progresso do ciclo"
+          }
+        }
+      }
+    },
+    "Day": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dia"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir"
+          }
+        }
+      }
+    },
+    "ends %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "termina %@"
+          }
+        }
+      }
+    },
+    "Export history…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar histórico…"
+          }
+        }
+      }
+    },
+    "Finished focus blocks and breaks show up here.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocos de foco e pausas concluídos aparecem aqui."
+          }
+        }
+      }
+    },
+    "Focus": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foco"
+          }
+        }
+      }
+    },
+    "Focus block done. Time to step away.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloco de foco concluído. Hora de dar uma pausa."
+          }
+        }
+      }
+    },
+    "Focused": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focado"
+          }
+        }
+      }
+    },
+    "Folder": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasta"
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geral"
+          }
+        }
+      }
+    },
+    "Granularity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Granularidade"
+          }
+        }
+      }
+    },
+    "History": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Histórico"
+          }
+        }
+      }
+    },
+    "Keep the Mac awake during focus": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter o Mac acordado durante o foco"
+          }
+        }
+      }
+    },
+    "Launch at login": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir ao iniciar a sessão"
+          }
+        }
+      }
+    },
+    "Long break": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa longa"
+          }
+        }
+      }
+    },
+    "Long break every %lld focus blocks": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa longa a cada %lld blocos de foco"
+          }
+        }
+      }
+    },
+    "Long break's over. Ready for another cycle?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa longa encerrada. Pronto para outro ciclo?"
+          }
+        }
+      }
+    },
+    "Menu Bar": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barra de menus"
+          }
+        }
+      }
+    },
+    "Month": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mês"
+          }
+        }
+      }
+    },
+    "Music": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Música"
+          }
+        }
+      }
+    },
+    "Music starts when a focus block starts and fades out when it ends — breaks stay quiet. A single track loops; a folder plays through.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A música começa junto com o bloco de foco e some no fim — as pausas ficam em silêncio. Uma faixa única entra em loop; uma pasta toca em sequência."
+          }
+        }
+      }
+    },
+    "No music source selected.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma fonte de música selecionada."
+          }
+        }
+      }
+    },
+    "No sessions yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma sessão ainda"
+          }
+        }
+      }
+    },
+    "Nothing chosen": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada escolhido"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligado"
+          }
+        }
+      }
+    },
+    "One track": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma faixa"
+          }
+        }
+      }
+    },
+    "Open Cadence": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir o Cadence"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar"
+          }
+        }
+      }
+    },
+    "Phases are capped at 59 minutes so the menu bar countdown never changes width.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As fases são limitadas a 59 minutos para que a contagem na barra de menus nunca mude de largura."
+          }
+        }
+      }
+    },
+    "Play a sound at phase changes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocar um som nas trocas de fase"
+          }
+        }
+      }
+    },
+    "Play during focus": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tocar durante o foco"
+          }
+        }
+      }
+    },
+    "Preview": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar"
+          }
+        }
+      }
+    },
+    "Quit Cadence": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encerrar o Cadence"
+          }
+        }
+      }
+    },
+    "Resume": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retomar"
+          }
+        }
+      }
+    },
+    "Ring and time": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anel e tempo"
+          }
+        }
+      }
+    },
+    "Ring only": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Somente o anel"
+          }
+        }
+      }
+    },
+    "Session": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessão"
+          }
+        }
+      }
+    },
+    "Sessions": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessões"
+          }
+        }
+      }
+    },
+    "Sessions recorded": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sessões registradas"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes…"
+          }
+        }
+      }
+    },
+    "Short break": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa curta"
+          }
+        }
+      }
+    },
+    "Show": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar"
+          }
+        }
+      }
+    },
+    "Shuffle": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aleatório"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pular"
+          }
+        }
+      }
+    },
+    "Skip Phase": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pular fase"
+          }
+        }
+      }
+    },
+    "Skip to next phase": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pular para a próxima fase"
+          }
+        }
+      }
+    },
+    "Start": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar"
+          }
+        }
+      }
+    },
+    "Start %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar %@"
+          }
+        }
+      }
+    },
+    "Start breaks automatically": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar as pausas automaticamente"
+          }
+        }
+      }
+    },
+    "Start next": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar a próxima"
+          }
+        }
+      }
+    },
+    "Start the next focus block automatically": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar o próximo bloco de foco automaticamente"
+          }
+        }
+      }
+    },
+    "Stats": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estatísticas"
+          }
+        }
+      }
+    },
+    "Stop session": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encerrar a sessão"
+          }
+        }
+      }
+    },
+    "Stop Session": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encerrar a sessão"
+          }
+        }
+      }
+    },
+    "stopped early": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "interrompida"
+          }
+        }
+      }
+    },
+    "Streak": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequência"
+          }
+        }
+      }
+    },
+    "Stream URL": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL de stream"
+          }
+        }
+      }
+    },
+    "That folder has no playable audio files.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essa pasta não tem arquivos de áudio reproduzíveis."
+          }
+        }
+      }
+    },
+    "This ended while your Mac was asleep. Nothing was started for you.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isso terminou enquanto o Mac estava dormindo. Nada foi iniciado automaticamente."
+          }
+        }
+      }
+    },
+    "This week": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana"
+          }
+        }
+      }
+    },
+    "Time only": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Somente o tempo"
+          }
+        }
+      }
+    },
+    "Time remaining": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo restante"
+          }
+        }
+      }
+    },
+    "Timer": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador"
+          }
+        }
+      }
+    },
+    "Today": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoje"
+          }
+        }
+      }
+    },
+    "Track": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faixa"
+          }
+        }
+      }
+    },
+    "URL": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL"
+          }
+        }
+      }
+    },
+    "Use the phase colour": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar a cor da fase"
+          }
+        }
+      }
+    },
+    "View": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visualização"
+          }
+        }
+      }
+    },
+    "Volume": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume"
+          }
+        }
+      }
+    },
+    "Week": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana"
+          }
+        }
+      }
+    },
+    "What are you focusing on?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No que você está focando?"
+          }
+        }
+      }
+    },
+    "Without permission, Cadence can still chime but cannot show phase-end alerts.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem permissão, o Cadence ainda toca o som, mas não consegue mostrar alertas de fim de fase."
+          }
+        }
+      }
+    },
+    "Your %@ ended while the Mac was asleep.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua %@ terminou enquanto o Mac estava dormindo."
+          }
+        }
+      }
+    },
+    "Your %@ ended while the Mac was asleep. Nothing was started for you.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua %@ terminou enquanto o Mac estava dormindo. Nada foi iniciado automaticamente."
+          }
+        }
+      }
+    },
+    "Your sessions are a plain JSON file in Application Support. Nothing is uploaded anywhere.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suas sessões são um arquivo JSON simples em Application Support. Nada é enviado para lugar nenhum."
+          }
+        }
       }
     }
   }

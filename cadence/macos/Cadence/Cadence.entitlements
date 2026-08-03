@@ -4,9 +4,20 @@
 <dict>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
-	<!-- Needed only so "Export history…" can write where the user picks.
-	     Cadence makes no network calls and reads nothing else on disk. -->
+
+	<!-- Lets "Export history…" write where the user picks, and lets focus
+	     music read the track or folder they choose. -->
 	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+
+	<!-- A chosen music file has to stay reachable after relaunch, which needs
+	     a security-scoped bookmark rather than a stored path. -->
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+
+	<!-- Outbound only, and only for a focus-music stream URL the user pastes
+	     in themselves. Cadence sends no telemetry and has no backend. -->
+	<key>com.apple.security.network.client</key>
 	<true/>
 </dict>
 </plist>

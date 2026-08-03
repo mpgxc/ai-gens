@@ -168,6 +168,20 @@ it an *opaque* mesh card provides content worth refracting, and only the
 floating control cluster is glass — sampling the mesh, never the panel
 material. That is also why `.clear` glass is legible here at all.
 
+**Focus music is a local file, a folder, or a stream URL** — and deliberately
+not YouTube. Their terms forbid extracting the audio, and the only sanctioned
+embed requires a visible player, which a menu bar timer does not have. `AVPlayer`
+covers files and streams through one code path. It starts when a focus block
+starts, fades out over 2s when the block ends, and stays quiet through breaks,
+so the silence itself marks the phase change.
+
+The sandbox detail worth knowing before touching `MusicPlayer`: a user-picked
+file is reachable only through a **security-scoped bookmark**. Storing the path
+gives you a player that works until the app relaunches and then silently fails
+forever, so the bookmark is what gets persisted, and access is opened before
+playback and closed in `stopImmediately()`. That is also why the entitlements
+now include `files.bookmarks.app-scope`, plus `network.client` for stream URLs.
+
 **Motion degrades from one file.** `Design/Motion.swift` resolves every curve in
 the app from `accessibilityReduceMotion` / `accessibilityReduceTransparency`,
 so views ask for `motion.morph` and the accessibility story is a single change
