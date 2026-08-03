@@ -34,9 +34,18 @@ jobs:
         working-directory: cadence/macos
         run: xcodegen generate
 
-      # Unsigned on purpose: signing needs a Developer ID certificate in
-      # secrets, and this repo has none. The resulting app is Gatekeeper-
-      # quarantined, which the release notes and the landing page both say.
+      # Ad-hoc signed ("-"), not unsigned. Signing properly needs a Developer ID
+      # certificate in secrets and this repo has none, but building with
+      # CODE_SIGNING_ALLOWED=NO leaves the bundle with no signature at all, and
+      # Gatekeeper reports that as *"Cadence is damaged and can't be opened"* —
+      # which reads like a corrupt download and offers only "Move to Trash".
+      # An ad-hoc signature produces a structurally valid (if untrusted) bundle,
+      # so the block degrades to the ordinary unidentified-developer path that
+      # "Open Anyway" can get past.
+      #
+      # Either way the download still carries the quarantine flag, so the
+      # release notes lead with `xattr -dr com.apple.quarantine`, which is the
+      # one step that always works.
       - name: Build
         working-directory: cadence/macos
         run: |
@@ -46,10 +55,17 @@ jobs:
             -scheme Cadence \
             -configuration Release \
             -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
             build
+
+      - name: Verify the signature
+        run: |
+          set -euo pipefail
+          APP="cadence/macos/build/Build/Products/Release/Cadence.app"
+          codesign --verify --verbose=2 "$APP"
+          codesign --display --verbose=2 "$APP" 2>&1 | grep -E 'Signature|Identifier|TeamIdentifier' || true
 
       - name: Package .dmg
         id: package
