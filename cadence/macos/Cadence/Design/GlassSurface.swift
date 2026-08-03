@@ -11,7 +11,13 @@ import SwiftUI
 ///   `GlassEffectContainer`, because glass cannot sample glass.
 /// * `.interactive()` mis-hit-tests non-capsule shapes, so buttons use
 ///   `.buttonStyle(.glass)` instead of asking for it here.
-struct GlassSurface<S: Shape>: ViewModifier {
+/// `InsettableShape`, not `Shape`: the opaque fallback draws its border with
+/// `strokeBorder`, which insets by half the line width so the stroke stays
+/// inside the shape's bounds. Plain `Shape` has no such member. Every call site
+/// already passes `Capsule`, `Circle` or `RoundedRectangle`, all of which
+/// conform, and `glassEffect(in:)` still accepts it since `InsettableShape`
+/// refines `Shape`.
+struct GlassSurface<S: InsettableShape>: ViewModifier {
     let shape: S
     var tint: Color?
     var overMesh: Bool
@@ -37,7 +43,7 @@ struct GlassSurface<S: Shape>: ViewModifier {
 extension View {
     /// - Parameter overMesh: pass `true` only when this surface sits directly
     ///   on `PhaseMesh`; that is the one place `.clear` glass reads correctly.
-    func cadenceGlass<S: Shape>(
+    func cadenceGlass<S: InsettableShape>(
         _ shape: S,
         tint: Color? = nil,
         overMesh: Bool = false
