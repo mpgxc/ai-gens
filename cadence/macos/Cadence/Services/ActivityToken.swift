@@ -13,7 +13,15 @@ import Foundation
 @MainActor
 final class ActivityToken {
 
-    private var token: (any NSObjectProtocol)?
+    /// `nonisolated(unsafe)` because `deinit` is nonisolated and Swift 6 refuses
+    /// to let it read a main-actor-isolated property whose type isn't `Sendable`
+    /// — and `NSObjectProtocol` is not.
+    ///
+    /// Sound by construction rather than by convention: `deinit` only runs once
+    /// the last reference is gone, so nothing else can be touching this
+    /// concurrently. Every ordinary access still happens through the
+    /// `@MainActor` methods below, which stay fully checked.
+    nonisolated(unsafe) private var token: (any NSObjectProtocol)?
     private var preventsSleep = false
 
     func setPreventsSleep(_ preventsSleep: Bool) {

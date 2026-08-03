@@ -16,7 +16,15 @@ final class MenuBarTicker {
 
     private(set) var tick: Int = 0
 
-    @ObservationIgnored private var timer: Timer?
+    /// Same reasoning as `ActivityToken.token`: the nonisolated `deinit` cannot
+    /// read a main-actor-isolated property of the non-`Sendable` type `Timer?`.
+    /// Safe because `deinit` implies sole ownership; `start()` and `stop()`
+    /// remain main-actor-only.
+    ///
+    /// The `deinit` is worth keeping rather than deleting: a repeating timer is
+    /// retained by the run loop, and its closure holds `self` weakly, so the
+    /// ticker can be deallocated while the timer keeps firing.
+    @ObservationIgnored nonisolated(unsafe) private var timer: Timer?
 
     func start() {
         guard timer == nil else { return }
