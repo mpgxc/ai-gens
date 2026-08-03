@@ -532,6 +532,24 @@ nav .btn { padding: .55rem 1.1rem; font-size: .85rem; }
 .download-cta { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
 .req { margin-top: 1.4rem; font-size: .78rem; color: var(--faint); font-family: var(--mono); }
 
+/* Honest note about what a release actually contains. */
+.notice {
+  display: flex; gap: .8rem; align-items: flex-start; text-align: left;
+  max-width: 58ch; margin: 2rem auto 0;
+  padding: 1rem 1.15rem; border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--phase-a) 9%, transparent);
+  border: 1px solid color-mix(in oklab, var(--phase-a) 24%, transparent);
+}
+.notice > svg { flex: none; width: 17px; height: 17px; margin-top: .18rem; color: color-mix(in oklab, var(--phase-a) 85%, var(--fg)); }
+.notice p { font-size: .82rem; line-height: 1.65; color: var(--muted); }
+.notice strong { color: var(--fg); font-weight: 650; }
+.notice em { font-style: normal; color: var(--fg); }
+.notice code {
+  font-family: var(--mono); font-size: .8em;
+  background: color-mix(in oklab, var(--fg) 10%, transparent);
+  padding: .12em .38em; border-radius: 5px;
+}
+
 footer { padding: 3rem 0 4rem; border-top: 1px solid var(--hairline); }
 .foot-row { display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
 .foot-row .brand { margin-right: auto; }
@@ -879,15 +897,25 @@ footer a:hover { color: var(--fg); }
     <div class="wrap">
       <div class="download-card glass glass-strong liquid reveal">
         <h2>Get Cadence</h2>
-        <p class="lead">Free and open source. Build it yourself, or grab the notarized release when it ships.</p>
+        <p class="lead">Free and open source. No account, no ads, no telemetry.</p>
         <div class="download-cta">
-          <a class="btn btn-primary" href="#download">
+          <a class="btn btn-primary" href="https://github.com/mpgxc/ai-gens/releases/latest">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.25 2.74 2.2 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.87.69 1.18-.02 1.93-1.08 2.65-2.14.83-1.22 1.18-2.4 1.2-2.46-.03-.01-2.3-.88-2.32-3.5zM14.9 5.6c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.7-.92 2.7.97.08 1.97-.5 2.58-1.23z"/></svg>
-            Download for Mac
+            Latest release
           </a>
-          <a class="btn btn-glass" href="https://github.com/mpgxc/ai-gens/tree/main/cadence">View source</a>
+          <a class="btn btn-glass" href="https://github.com/mpgxc/ai-gens/tree/main/cadence/macos">Build from source</a>
         </div>
-        <p class="req">Requires macOS 26 Tahoe or later · Apple silicon &amp; Intel</p>
+        <p class="req">Requires macOS 26 Tahoe or later</p>
+
+        <div class="notice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></svg>
+          <p>
+            <strong>v0.1.0 ships the source, not a signed app.</strong>
+            Clone it, run <code>xcodegen generate</code> in <code>cadence/macos</code>, and hit ⌘R in Xcode —
+            about a minute. Once a <code>.dmg</code> is attached to a release it will still be unsigned,
+            so macOS will ask you to right-click → <em>Open</em> the first time.
+          </p>
+        </div>
       </div>
     </div>
   </section>

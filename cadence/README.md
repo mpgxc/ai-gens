@@ -72,6 +72,25 @@ drag `macos/Cadence/` in as a synchronised folder, then set: deployment target
 26.0, Swift 6 with strict concurrency, `LSUIElement = YES`, App Sandbox on with
 `Cadence.entitlements`, and the asset catalog's app icon name to `AppIcon`.
 
+### Releases
+
+`.github/workflows/release.yml` builds the app on a `macos-26` runner (Apple
+silicon, Xcode 26.x — an older image has no macOS 26 SDK and cannot build this
+target at all) and packages a `.dmg`.
+
+```bash
+git tag v0.2.0 && git push origin v0.2.0   # cuts a release and attaches the .dmg
+```
+
+It runs on tags only, plus `workflow_dispatch` if you want a compile check
+without cutting a release — a push to `main` never triggers a macOS build.
+
+The `.dmg` is **unsigned**: signing needs a Developer ID certificate in repo
+secrets, and there isn't one. macOS quarantines it, so the first launch needs
+right-click → Open (or `xattr -dr com.apple.quarantine Cadence.app`). Both the
+release notes and the landing page say so rather than letting people hit a
+Gatekeeper wall unprepared.
+
 ### Three things that will bite you on first build
 
 1. **Set a development team.** `UNUserNotificationCenter` requires a signed app
