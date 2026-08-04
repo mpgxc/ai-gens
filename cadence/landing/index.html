@@ -454,6 +454,160 @@ nav .btn { padding: .55rem 1.1rem; font-size: .85rem; }
 .mb-stat span:last-child  { font-family: var(--mono); font-weight: 600; }
 
 /* ============================================================
+   APP SCREENS
+   Each pane is rebuilt from the SwiftUI source rather than
+   screenshotted, so the metrics below are the real ones:
+   260pt ring at 12pt stroke, 62pt digits, 46/62/46 controls.
+   ============================================================ */
+.screens-switch {
+  display: flex; gap: .25rem; padding: .3rem;
+  border-radius: 999px; width: max-content;
+  margin: 2.5rem auto 1.6rem;
+}
+.screens-switch button {
+  font: inherit; font-size: .82rem; font-weight: 600;
+  padding: .45rem 1rem; border-radius: 999px; border: 0;
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: color .25s var(--ease-out), background .25s var(--ease-out);
+}
+.screens-switch button:hover { color: var(--fg); }
+.screens-switch button[aria-selected="true"] {
+  color: var(--fg);
+  background: color-mix(in oklab, var(--phase-a) 20%, transparent);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+}
+
+.appwin {
+  position: relative; overflow: hidden;
+  border-radius: 16px;
+  max-width: 860px; margin-inline: auto;
+  border: 1px solid var(--hairline);
+  box-shadow: 0 30px 80px rgb(0 0 0 / .45), 0 2px 10px rgb(0 0 0 / .3);
+  /* The window's own PhaseMesh, flattened: the app draws it at 0.55
+     opacity over .thinMaterial. */
+  background:
+    radial-gradient(70% 90% at 12% 8%,  color-mix(in oklab, var(--phase-a) 38%, transparent), transparent 60%),
+    radial-gradient(65% 85% at 88% 18%, color-mix(in oklab, var(--phase-b) 34%, transparent), transparent 62%),
+    radial-gradient(90% 70% at 50% 105%, color-mix(in oklab, var(--phase-b) 26%, #6D8BFA), transparent 66%),
+    var(--bg);
+}
+@media (prefers-color-scheme: light) { .appwin { box-shadow: 0 30px 80px rgb(20 24 40 / .18), 0 2px 10px rgb(20 24 40 / .1); } }
+
+/* .windowStyle(.hiddenTitleBar) — traffic lights, then the toolbar's
+   principal segmented picker, no title. */
+.appwin-chrome {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .7rem .9rem .2rem;
+}
+.tl { display: flex; gap: 8px; }
+.tl i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+.tl i:nth-child(1) { background: #FF5F57 } .tl i:nth-child(2) { background: #FEBC2E } .tl i:nth-child(3) { background: #28C840 }
+.appwin-seg {
+  display: flex; margin-inline: auto; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--hairline); background: rgb(255 255 255 / .06);
+  font-size: .74rem; font-weight: 500;
+}
+.appwin-seg span { padding: .28rem .8rem; color: var(--muted); }
+.appwin-seg span.on { background: var(--glass-fill-2); color: var(--fg); }
+
+.appwin-body { position: relative; min-height: 430px; }
+.pane { display: none; padding: 1.4rem 1.6rem 2rem; }
+.pane.on { display: block; animation: pane-in .45s var(--ease-out); }
+@keyframes pane-in { from { opacity: 0; filter: blur(6px); transform: scale(.99) } to { opacity: 1; filter: none; transform: none } }
+
+/* --- Session pane ---
+   `.pane-session.on` and not `.pane-session`: `.pane.on` is two classes
+   and would otherwise win on specificity and flatten this back to block,
+   which left the whole pane jammed against the left edge. */
+.pane-session.on { display: flex; flex-direction: column; align-items: center; gap: 1.1rem; }
+.win-ring { position: relative; width: 260px; height: 260px; display: grid; place-items: center; }
+.win-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.win-ring .trk { fill: none; stroke: rgb(255 255 255 / .12); stroke-width: 12; }
+.win-ring .prg { fill: none; stroke: url(#ring-gradient); stroke-width: 12; stroke-linecap: round; }
+.win-digits { font-family: var(--mono); font-size: 3.5rem; font-weight: 500; letter-spacing: -.02em; line-height: 1; }
+.win-ends { font-family: var(--mono); font-size: .74rem; color: var(--faint); margin-top: .35rem; }
+.win-namefield {
+  display: flex; align-items: center; gap: .5rem; justify-content: center;
+  width: min(340px, 90%); padding: .55rem 1rem; border-radius: 999px;
+  font-size: .86rem; color: var(--muted);
+  background: var(--glass-fill-2); border: 1px solid var(--hairline);
+}
+.win-pips { display: flex; gap: 7px; }
+.win-pips i { width: 7px; height: 7px; border-radius: 50%; background: rgb(255 255 255 / .22); display: block; }
+.win-pips i.fill { background: var(--phase-a); }
+.win-cluster { display: flex; gap: 1rem; align-items: center; }
+.win-cbtn {
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--glass-fill-2); border: 1px solid var(--hairline);
+  box-shadow: inset 0 1px 0 var(--glass-hi); color: var(--fg);
+}
+.win-cbtn.big { width: 62px; height: 62px; background: linear-gradient(120deg, var(--phase-a), var(--phase-b)); color: #0A0A10; border-color: transparent; }
+.win-cbtn svg { width: 17px; height: 17px; } .win-cbtn.big svg { width: 21px; height: 21px; }
+
+/* --- Stats pane --- */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; margin-bottom: 1.4rem; }
+.kpi { padding: .7rem .85rem; border-radius: 14px; background: var(--glass-fill); border: 1px solid var(--hairline); }
+.kpi .k { font-family: var(--mono); font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
+.kpi .l { font-size: .6rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-top: .15rem; }
+.win-chart { position: relative; display: flex; align-items: flex-end; gap: .55rem; height: 190px; padding-left: 2.2rem; }
+.win-chart .yax { position: absolute; left: 0; top: 0; bottom: 1.3rem; display: flex; flex-direction: column; justify-content: space-between; font-family: var(--mono); font-size: .6rem; color: var(--faint); }
+.win-chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .4rem; height: 100%; }
+.win-chart .b { width: 100%; border-radius: 6px 6px 3px 3px; background: linear-gradient(180deg, var(--phase-a), var(--phase-b)); }
+.win-chart .d { font-family: var(--mono); font-size: .6rem; color: var(--faint); }
+.win-avg { position: absolute; left: 2.2rem; right: 0; border-top: 1px dashed rgb(255 255 255 / .35); }
+/* Leading annotation like the app's RuleMark, but chipped: the rule sits
+   below the taller bars, so bare text on top of one is unreadable. */
+.win-avg span {
+  position: absolute; top: -1.05rem; left: 0;
+  font-family: var(--mono); font-size: .6rem; color: var(--fg);
+  padding: .08rem .34rem; border-radius: 4px;
+  background: color-mix(in oklab, var(--bg) 72%, transparent);
+  backdrop-filter: blur(5px);
+}
+
+/* --- History pane --- */
+.hist-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .5rem .75rem; border-radius: 10px; margin: 1rem 0 .5rem;
+  background: rgb(255 255 255 / .07); font-size: .8rem; font-weight: 600;
+}
+.hist-head:first-child { margin-top: 0; }
+.hist-head span:last-child { font-family: var(--mono); font-weight: 500; color: var(--muted); }
+.hist-row { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; }
+.hist-ico { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.hist-ico svg { width: 13px; height: 13px; }
+.hist-row .nm { font-size: .8rem; font-weight: 500; }
+.hist-row .tm { font-family: var(--mono); font-size: .68rem; color: var(--faint); }
+.hist-row .dur { margin-left: auto; font-family: var(--mono); font-size: .74rem; font-weight: 500; }
+.hist-row .early { font-size: .62rem; color: var(--faint); margin-left: auto; margin-right: .6rem; }
+
+/* --- Settings (Music) pane --- */
+.win-form { max-width: 520px; margin-inline: auto; }
+.win-group { border-radius: 12px; background: rgb(255 255 255 / .06); border: 1px solid var(--hairline); overflow: hidden; }
+.win-r { display: flex; align-items: center; gap: .75rem; padding: .6rem .85rem; font-size: .82rem; }
+.win-r + .win-r { border-top: 1px solid var(--hairline); }
+.win-r .rt { color: var(--fg); } .win-r .rr { margin-left: auto; display: flex; align-items: center; gap: .5rem; color: var(--muted); }
+.win-seg2 { display: flex; border-radius: 7px; overflow: hidden; border: 1px solid var(--hairline); font-size: .7rem; }
+.win-seg2 span { padding: .2rem .55rem; color: var(--muted); }
+.win-seg2 span.on { background: color-mix(in oklab, var(--phase-a) 26%, transparent); color: var(--fg); }
+.win-btn { font-size: .72rem; padding: .2rem .6rem; border-radius: 6px; border: 1px solid var(--hairline); background: var(--glass-fill-2); color: var(--fg); }
+.win-slider { width: 150px; height: 4px; border-radius: 999px; background: rgb(255 255 255 / .16); position: relative; }
+.win-slider::after { content: ''; position: absolute; inset: 0 40% 0 0; border-radius: 999px; background: var(--phase-a); }
+.win-slider::before { content: ''; position: absolute; left: 60%; top: 50%; width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0/.4); }
+.win-toggle { width: 30px; height: 18px; border-radius: 999px; background: var(--phase-a); position: relative; }
+.win-toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.win-foot { font-size: .68rem; color: var(--faint); line-height: 1.55; margin: .5rem .3rem 1.1rem; }
+
+.screens-note { text-align: center; font-size: .74rem; color: var(--faint); margin-top: 1.2rem; }
+
+@media (max-width: 720px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .appwin-seg { font-size: .68rem; }
+  .win-ring { width: 200px; height: 200px; }
+  .win-digits { font-size: 2.6rem; }
+}
+
+/* ============================================================
    FEATURES
    ============================================================ */
 .feature-grid {
@@ -670,9 +824,9 @@ footer a:hover { color: var(--fg); }
     </a>
     <div class="nav-links">
       <a href="#menubar">Menu bar</a>
+      <a href="#screens">Screens</a>
       <a href="#features">Features</a>
       <a href="#rhythm">Rhythm</a>
-      <a href="#stats">Stats</a>
     </div>
     <a class="btn btn-primary" href="#download">Download</a>
   </nav>
@@ -776,6 +930,138 @@ footer a:hover { color: var(--fg); }
           <div class="mb-stat"><span>Cycle</span><span>3 of 4</span></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ====================== SCREENS ====================== -->
+  <section id="screens">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="eyebrow"><span class="dot"></span>The app</span>
+        <h2>Every screen, one window.</h2>
+        <p class="lead">
+          Session, history, stats and settings behind a segmented picker in the title bar —
+          the same control you see here.
+        </p>
+      </div>
+
+      <div class="screens-switch glass liquid reveal" role="tablist" aria-label="App screens">
+        <button role="tab" aria-selected="true"  data-screen="session">Session</button>
+        <button role="tab" aria-selected="false" data-screen="history">History</button>
+        <button role="tab" aria-selected="false" data-screen="stats">Stats</button>
+        <button role="tab" aria-selected="false" data-screen="music">Music</button>
+      </div>
+
+      <div class="appwin reveal">
+        <div class="appwin-chrome">
+          <div class="tl"><i></i><i></i><i></i></div>
+          <div class="appwin-seg" id="winSeg">
+            <span class="on">Session</span><span>History</span><span>Stats</span>
+          </div>
+          <div style="width:52px"></div>
+        </div>
+
+        <div class="appwin-body">
+          <!-- Session -->
+          <div class="pane pane-session on" data-pane="session">
+            <span class="phase-pill">Focus</span>
+            <div class="win-ring">
+              <svg viewBox="0 0 260 260" aria-hidden="true">
+                <circle class="trk" cx="130" cy="130" r="118"/>
+                <circle class="prg" cx="130" cy="130" r="118" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="0.38"/>
+              </svg>
+              <div style="text-align:center">
+                <div class="win-digits mono">15:24</div>
+                <div class="win-ends">ends 15:42</div>
+              </div>
+            </div>
+            <div class="win-namefield">
+              <span style="color:var(--fg)">Writing the release notes</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 7v5l3 2"/><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+            </div>
+            <div class="win-pips"><i class="fill"></i><i class="fill"></i><i></i><i></i></div>
+            <div class="win-cluster">
+              <div class="win-cbtn"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="3"/></svg></div>
+              <div class="win-cbtn big"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.4"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.4"/></svg></div>
+              <div class="win-cbtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5.5v13a1 1 0 0 0 1.54.84l9.2-6.5a1 1 0 0 0 0-1.68l-9.2-6.5A1 1 0 0 0 6 5.5z"/><rect x="18" y="5" width="2.6" height="14" rx="1.3"/></svg></div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div class="pane" data-pane="history">
+            <div class="hist-head"><span>Monday, 3 Aug</span><span>2h 05m</span></div>
+            <div class="hist-row">
+              <div class="hist-ico" style="background:color-mix(in oklab,var(--phase-a) 18%,transparent);color:var(--phase-a)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+              <div><div class="nm">Writing the release notes</div><div class="tm">14:20</div></div>
+              <div class="dur">25m</div>
+            </div>
+            <div class="hist-row">
+              <div class="hist-ico" style="background:rgb(77 225 193 / .18);color:#4DE1C1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 8h12v5a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8zm13 1h2a2 2 0 0 1 0 4h-2z"/><rect x="4" y="19" width="14" height="1.6" rx=".8"/></svg></div>
+              <div><div class="nm">Short break</div><div class="tm">14:45</div></div>
+              <div class="dur">5m</div>
+            </div>
+            <div class="hist-row">
+              <div class="hist-ico" style="background:color-mix(in oklab,var(--phase-a) 18%,transparent);color:var(--phase-a)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+              <div><div class="nm">Reviewing the timer engine</div><div class="tm">14:50</div></div>
+              <div class="early">stopped early</div>
+              <div class="dur" style="color:var(--muted)">11m</div>
+            </div>
+            <div class="hist-head"><span>Sunday, 2 Aug</span><span>50m</span></div>
+            <div class="hist-row">
+              <div class="hist-ico" style="background:color-mix(in oklab,var(--phase-a) 18%,transparent);color:var(--phase-a)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+              <div><div class="nm">Menu bar renderer</div><div class="tm">10:05</div></div>
+              <div class="dur">25m</div>
+            </div>
+            <div class="hist-row">
+              <div class="hist-ico" style="background:rgb(167 139 250 / .18);color:#A78BFA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4a2 2 0 1 0 0-.01M6 21l3-7 4 2 1 5M9 14l-2-4 5-2 3 3 3 1"/></svg></div>
+              <div><div class="nm">Long break</div><div class="tm">10:30</div></div>
+              <div class="dur">15m</div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="pane" data-pane="stats">
+            <div class="appwin-seg" style="margin:0 0 1.1rem; width:max-content"><span class="on">Day</span><span>Week</span><span>Month</span></div>
+            <div class="kpi-row">
+              <div class="kpi"><div class="k">9h 35m</div><div class="l">Focused</div></div>
+              <div class="kpi"><div class="k">23</div><div class="l">Sessions</div></div>
+              <div class="kpi"><div class="k">6d</div><div class="l">Streak</div></div>
+              <div class="kpi"><div class="k">2h 30m</div><div class="l">Best day</div></div>
+            </div>
+            <div class="win-chart">
+              <div class="yax"><span>150m</span><span>100m</span><span>50m</span><span>0m</span></div>
+              <div class="win-avg" style="bottom:48%"><span>avg 82m</span></div>
+              <div class="col"><div class="b" style="height:44%"></div><span class="d">M</span></div>
+              <div class="col"><div class="b" style="height:72%"></div><span class="d">T</span></div>
+              <div class="col"><div class="b" style="height:58%"></div><span class="d">W</span></div>
+              <div class="col"><div class="b" style="height:96%"></div><span class="d">T</span></div>
+              <div class="col"><div class="b" style="height:81%"></div><span class="d">F</span></div>
+              <div class="col"><div class="b" style="height:26%"></div><span class="d">S</span></div>
+              <div class="col"><div class="b" style="height:12%"></div><span class="d">S</span></div>
+            </div>
+          </div>
+
+          <!-- Settings › Music -->
+          <div class="pane" data-pane="music">
+            <div class="win-form">
+              <div class="appwin-seg" style="margin:0 auto 1.2rem; width:max-content"><span>General</span><span>Timer</span><span class="on">Music</span><span>Menu Bar</span></div>
+              <div class="win-group">
+                <div class="win-r"><span class="rt">Play during focus</span><span class="rr"><span class="win-seg2"><span>Off</span><span>One track</span><span class="on">Folder</span><span>Stream URL</span></span></span></div>
+                <div class="win-r"><span class="rt">Folder</span><span class="rr">Focus mixes<span class="win-btn">Choose…</span></span></div>
+                <div class="win-r"><span class="rt">Shuffle</span><span class="rr"><span class="win-toggle"></span></span></div>
+              </div>
+              <p class="win-foot">Music starts when a focus block starts and fades out when it ends — breaks stay quiet. A single track loops; a folder plays through.</p>
+              <div class="win-group">
+                <div class="win-r"><span class="rt">Volume</span><span class="rr"><span class="win-slider"></span></span></div>
+                <div class="win-r"><span class="win-btn">Preview</span><span class="rr"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12h3l2-6 3 12 3-9 2 3h7"/></svg>Focus mixes — track 3</span></div>
+              </div>
+              <p class="win-foot">A volume change takes effect on the next focus block, so it never jumps mid-session.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="screens-note">Rebuilt from the app's own SwiftUI layout — not photographs of a running window.</p>
     </div>
   </section>
 
@@ -998,6 +1284,31 @@ footer a:hover { color: var(--fg); }
       void notice.offsetWidth;          // restart the animation on repeat clicks
       notice.classList.add('flash');
     });
+  }
+
+  /* ----------------------------------------------------------
+     Screens switcher.
+     The window's own segmented picker follows along for the three
+     main-window panes, and disappears for Music — in the app that
+     lives in a separate Settings window, not behind that picker.
+     ---------------------------------------------------------- */
+  {
+    const tabs = [...document.querySelectorAll('.screens-switch button')];
+    const panes = [...document.querySelectorAll('.pane')];
+    const winSeg = document.getElementById('winSeg');
+    const segItems = winSeg ? [...winSeg.children] : [];
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        const wanted = tab.dataset.screen;
+        tabs.forEach(t => t.setAttribute('aria-selected', String(t === tab)));
+        panes.forEach(p => p.classList.toggle('on', p.dataset.pane === wanted));
+
+        const index = ['session', 'history', 'stats'].indexOf(wanted);
+        if (winSeg) winSeg.style.visibility = index === -1 ? 'hidden' : 'visible';
+        segItems.forEach((s, i) => s.classList.toggle('on', i === index));
+      });
+    }
   }
 
   /* ----------------------------------------------------------
