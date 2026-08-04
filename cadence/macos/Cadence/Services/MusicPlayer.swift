@@ -172,7 +172,11 @@ final class MusicPlayer {
                 guard let self, self.player != nil else { return }
                 switch self.source {
                 case .file:
-                    self.player?.seek(to: .zero)
+                    // `seek(to:)` has an async overload, and this closure is an
+                    // async context, so that is the one the compiler picks —
+                    // it has to be awaited. Discarding the Bool it returns:
+                    // a failed seek on a looping track is not worth reacting to.
+                    _ = await self.player?.seek(to: .zero)
                     self.player?.play()
                 case .folder:
                     self.advanceToNextTrack()
